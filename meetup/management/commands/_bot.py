@@ -24,8 +24,6 @@ from ._keyboard import (
     get_subscribtion_menu,
     get_meetup_description_menu,
 )
-from django.contrib.auth.models import User
-
 from meetup.models import Meetuper
 
 env = Env()
@@ -46,16 +44,12 @@ def error(state, error):
 
 
 def start(context, update):
-    tg_id = update.message.chat.id
-    name = update.message.chat.first_name
-
-    user = User.objects.create_user(
-        username=tg_id,
-        first_name=name,
-    )
-    Meetuper.objects.create(
-        user=User.objects.get(pk=user.id),
-        chat_id=tg_id
+    Meetuper.objects.get_or_create(
+        chat_id=update.message.chat.id,
+        defaults={
+            'firstname': update.message.chat.first_name,
+            'lastname': update.message.chat.last_name,
+        }
     )
 
     message = '''
@@ -101,8 +95,10 @@ def confirm_menu_handler(context, update):
 
 
 def wait_email_handler(context, update):
-    email = update.message['text']
     chat_id = update.message.chat.id
+    meetuper = Meetuper.objects.get(chat_id=chat_id)
+    meetuper.email = update.message['text']
+    meetuper.save()
     context.bot.send_message(
         chat_id=chat_id,
         text=f'Спасибо за подтверждение регистрации. Мы рады будем видеть Вас на митапе',
