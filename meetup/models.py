@@ -103,7 +103,7 @@ class Stage(models.Model):
 
 
 class Block(models.Model):
-    title = models.CharField('название этапа', max_length=255)
+    title = models.CharField('название блока', max_length=255)
     stage = models.ForeignKey(
         Stage,
         on_delete=models.CASCADE,
