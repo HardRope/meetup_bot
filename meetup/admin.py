@@ -15,10 +15,13 @@ from .models import (
 @admin.register(Meetuper)
 class MeetuperAdmin(admin.ModelAdmin):
     list_display = [
-        'user',
+        'chat_id'
+        'firstname',
+        'lastname',
         'organization',
         'position',
         'is_open_for_communication',
+        'about_me'
     ]
 
 

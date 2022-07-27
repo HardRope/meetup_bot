@@ -1,12 +1,19 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 
 
-User = get_user_model()
-
-
 class Meetuper(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    firstname = models.CharField(
+        'имя участника',
+        max_length=255,
+        blank=True,
+        default=''
+    )
+    lastname = models.CharField(
+        'фамилия участника',
+        max_length=255,
+        blank=True,
+        default=''
+    )
     organization = models.CharField(
         'место работы',
         max_length=255,
@@ -21,7 +28,7 @@ class Meetuper(models.Model):
     )
     chat_id = models.PositiveIntegerField(
         verbose_name='чат-id участника в Telegram',
-        unique=True
+        primary_key=True
     )
     about_me = models.TextField(
         'о себе',
@@ -34,7 +41,7 @@ class Meetuper(models.Model):
     )
 
     def __str__(self):
-        return f'{self.user.username}'
+        return f'{self.chat_id}: {self.firstname} {self.lastname}'
 
     class Meta:
         verbose_name = 'Участник'
@@ -50,7 +57,9 @@ class Speaker(models.Model):
     )
 
     def __str__(self):
-        return f'{self.participant.user.username}'
+        return f'''
+            Спикер {self.participant.firstname} {self.participant.lastname}
+        '''
 
     class Meta:
         verbose_name = 'Спикер'
@@ -142,7 +151,7 @@ class Event(models.Model):
         return f'''
             {self.start_time} - {self.end_time}
             \n{self.title}
-            \n{self.speaker.partisipant.user.username}
+            \n{self.speaker.partisipant.firstname} {self.speaker.partisipant.lastname}
         '''
 
     class Meta:
@@ -176,7 +185,7 @@ class Question(models.Model):
 
     def __str__(self):
         return f'''
-            Вопрос от {self.meetuper.user.username} к {self.speaker.partisipant.user.username}
+            Вопрос от {self.meetuper.lastname} к {self.speaker.partisipant.lastname}
         '''
 
     class Meta:
@@ -194,7 +203,7 @@ class Donation(models.Model):
     amount = models.PositiveSmallIntegerField('сумма доната в рублях')
     
     def __str__(self):
-        return f'Донат от {self.meetuper.user.username}'
+        return f'Донат от {self.meetuper.firstname} {self.meetuper.lastname}'
 
     class Meta:
         verbose_name = 'Донат'
