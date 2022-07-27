@@ -1,4 +1,5 @@
 from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Meetuper(models.Model):
@@ -13,6 +14,16 @@ class Meetuper(models.Model):
         max_length=255,
         blank=True,
         default=''
+    )
+    email = models.EmailField(
+        'email участника',
+        blank=True,
+        default=''
+    )
+    phone_number = PhoneNumberField(
+        'номер телефона',
+        blank=True,
+        null=True
     )
     organization = models.CharField(
         'место работы',
@@ -29,11 +40,6 @@ class Meetuper(models.Model):
     chat_id = models.PositiveIntegerField(
         verbose_name='чат-id участника в Telegram',
         primary_key=True
-    )
-    about_me = models.TextField(
-        'о себе',
-        blank=True,
-        default=''
     )
     is_open_for_communication = models.BooleanField(
         'открыт к общению',

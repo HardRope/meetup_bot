@@ -18,10 +18,11 @@ class MeetuperAdmin(admin.ModelAdmin):
         'chat_id',
         'firstname',
         'lastname',
+        'email',
+        'phone_number',
         'organization',
         'position',
         'is_open_for_communication',
-        'about_me'
     ]
 
 
