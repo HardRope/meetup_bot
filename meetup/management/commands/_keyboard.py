@@ -11,10 +11,20 @@ def get_subscribtion_menu():
     return inline_kb_markup
 
 
+def get_main_menu():
+    inline_keyboard = [
+        [InlineKeyboardButton('Мероприятие', callback_data='mitup')],
+        [InlineKeyboardButton('Общение', callback_data='communication')],
+    ]
+    inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
+
+    return inline_kb_markup
+
+
 def get_meetup_description_menu():
     inline_keyboard = [
-        [InlineKeyboardButton('Расписание митапа', callback_data='schedule')],
-        [InlineKeyboardButton('Докладчики митапа', callback_data='speakers')],
+        [InlineKeyboardButton('Задать вопрос {speaker}', callback_data='question')],
+        [InlineKeyboardButton('Посмотреть программу мероприятия', callback_data='description')],
     ]
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 

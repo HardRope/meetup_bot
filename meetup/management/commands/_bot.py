@@ -14,12 +14,19 @@ from telegram.ext import (
     PreCheckoutQueryHandler,
 )
 
+# from _keyboard import (
+#     get_subscribtion_menu,
+#     get_main_menu,
+#     get_meetup_description_menu,
+# )
+
 from ._keyboard import (
     get_subscribtion_menu,
     get_meetup_description_menu,
 )
+from django.contrib.auth.models import User
 
-# from meetup.models import User
+from meetup.models import Meetuper
 
 env = Env()
 env.read_env()
@@ -40,6 +47,17 @@ def error(state, error):
 
 def start(context, update):
     tg_id = update.message.chat.id
+    name = update.message.chat.first_name
+
+    user = User.objects.create_user(
+        username=tg_id,
+        first_name=name,
+    )
+    Meetuper.objects.create(
+        user=User.objects.get(pk=user.id),
+        chat_id=tg_id
+    )
+
     message = '''
     Приветствую! Вы подписались на чат-бота конференции "{conference.name}".
     Подтвердите регистрацию на конференцию "{conference.name}" отправив нам свой e-mail. Обещаем не спамить.))
@@ -60,14 +78,14 @@ def confirm_menu_handler(context, update):
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Спасибо за подтверждение регистрации. Мы рады будем видеть Вас на митапе',
-            reply_markup=get_meetup_description_menu()
+            reply_markup=get_main_menu()
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id
         )
 
-        return 'CONF_DESCRIPTION'
+        return 'MAIN_MENU'
 
     elif query.data == 'mail':
         context.bot.send_message(
@@ -85,21 +103,46 @@ def confirm_menu_handler(context, update):
 def wait_email_handler(context, update):
     email = update.message['text']
     chat_id = update.message.chat.id
-    context.bot.delete_message(
-        chat_id=chat_id,
-        message_id=update.message.message_id
-    )
     context.bot.send_message(
         chat_id=chat_id,
         text=f'Спасибо за подтверждение регистрации. Мы рады будем видеть Вас на митапе',
-        reply_markup=get_meetup_description_menu()
+        reply_markup=get_main_menu()
+    )
+    context.bot.delete_message(
+        chat_id=chat_id,
+        message_id=update.message.message_id - 1
     )
 
-    return 'CONF_DESCRIPTION'
+    return 'MAIN_MENU'
 
 
-def conf_description_handler(context, update):
-    pass
+def main_menu_handler(context, update):
+    query = update.callback_query
+    if query.data == 'mitup':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Расписание конференции',
+            reply_markup=get_meetup_description_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'NEXT'
+
+    elif query.data == 'communication':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Общение',
+            # reply_markup=get_meetup_description_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'NEXT'
 
 
 def start_without_shipping(update, context):
@@ -141,10 +184,10 @@ def successful_payment_callback(update, context):
         chat_id=update.message.chat_id,
         text='Спасибо за донат'
     )
-    # context.bot.delete_message(
-    #     chat_id=update.message.chat_id,
-    #     message_id=update.message.message_id
-    # )
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id
+    )
 
 
 def handle_users_reply(update, context):
@@ -167,7 +210,7 @@ def handle_users_reply(update, context):
         'START': start,
         'CONFIRM_MENU': confirm_menu_handler,
         'WAIT_EMAIL': wait_email_handler,
-        'CONF_DESCRIPTION': conf_description_handler,
+        'MAIN_MENU': main_menu_handler,
     }
     print(user_state)
     state_handler = states_functions[user_state]
