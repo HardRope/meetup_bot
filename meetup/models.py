@@ -7,8 +7,27 @@ User = get_user_model()
 
 class Meetuper(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    organization = models.CharField('место работы', max_length=255)
-    position = models.CharField('должность', max_length=255)
+    organization = models.CharField(
+        'место работы',
+        max_length=255,
+        blank=True,
+        default=''
+    )
+    position = models.CharField(
+        'должность',
+        max_length=255,
+        blank=True,
+        default=''
+    )
+    chat_id = models.PositiveIntegerField(
+        verbose_name='чат-id участника в Telegram',
+        unique=True
+    )
+    about_me = models.TextField(
+        'о себе',
+        blank=True,
+        default=''
+    )
     is_open_for_communication = models.BooleanField(
         'открыт к общению',
         default=False
