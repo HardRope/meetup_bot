@@ -1,17 +1,25 @@
 import logging
+from pprint import pprint
+from textwrap import dedent
 
 import redis
 from environs import Env
 from telegram import LabeledPrice
-from telegram.ext import (Filters,
-                          Updater,
-                          CallbackQueryHandler,
-                          CommandHandler,
-                          MessageHandler,
-                          PreCheckoutQueryHandler,
-                          )
+from telegram.ext import (
+    Filters,
+    Updater,
+    CallbackQueryHandler,
+    CommandHandler,
+    MessageHandler,
+    PreCheckoutQueryHandler,
+)
 
-from meetup.models import User
+from ._keyboard import (
+    get_subscribtion_menu,
+    get_meetup_description_menu,
+)
+
+# from meetup.models import User
 
 env = Env()
 env.read_env()
@@ -32,12 +40,66 @@ def error(state, error):
 
 def start(context, update):
     tg_id = update.message.chat.id
-    print(tg_id)
+    message = '''
+    Приветствую! Вы подписались на чат-бота конференции "{conference.name}".
+    Подтвердите регистрацию на конференцию "{conference.name}" отправив нам свой e-mail. Обещаем не спамить.))
+    А можете и не отправлять мы все равно вам рады.)))
+    '''
     update.message.reply_text(
-        'Привет! Я бот для проведения митапов'
+        text=dedent(message),
+        reply_markup=get_subscribtion_menu()
     )
 
-    return 'NEXT'
+    return 'CONFIRM_MENU'
+
+
+def confirm_menu_handler(context, update):
+    query = update.callback_query
+
+    if query.data == 'no_mail':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Спасибо за подтверждение регистрации. Мы рады будем видеть Вас на митапе',
+            reply_markup=get_meetup_description_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'CONF_DESCRIPTION'
+
+    elif query.data == 'mail':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Спасибо за подтверждение регистрации. Для завершения регистрации введите ваш email',
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'WAIT_EMAIL'
+
+
+def wait_email_handler(context, update):
+    email = update.message['text']
+    chat_id = update.message.chat.id
+    context.bot.delete_message(
+        chat_id=chat_id,
+        message_id=update.message.message_id
+    )
+    context.bot.send_message(
+        chat_id=chat_id,
+        text=f'Спасибо за подтверждение регистрации. Мы рады будем видеть Вас на митапе',
+        reply_markup=get_meetup_description_menu()
+    )
+
+    return 'CONF_DESCRIPTION'
+
+
+def conf_description_handler(context, update):
+    pass
 
 
 def start_without_shipping(update, context):
@@ -103,7 +165,11 @@ def handle_users_reply(update, context):
 
     states_functions = {
         'START': start,
+        'CONFIRM_MENU': confirm_menu_handler,
+        'WAIT_EMAIL': wait_email_handler,
+        'CONF_DESCRIPTION': conf_description_handler,
     }
+    print(user_state)
     state_handler = states_functions[user_state]
     try:
         next_state = state_handler(context, update)
@@ -134,7 +200,7 @@ def main():
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CallbackQueryHandler(handle_users_reply))
-    # dispatcher.add_handler(MessageHandler(Filters.text, handle_users_reply))
+    dispatcher.add_handler(MessageHandler(Filters.text, handle_users_reply))
     dispatcher.add_handler(CommandHandler('start', handle_users_reply))
     dispatcher.add_handler(CommandHandler('pay', start_without_shipping))
     dispatcher.add_handler(PreCheckoutQueryHandler(precheckout_callback))
