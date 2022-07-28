@@ -22,6 +22,7 @@ from ._keyboard import (
     get_stage_menu,
     get_back_menu,
     get_meetup_description_menu,
+    get_communication_menu,
 )
 
 from meetup.models import (
@@ -177,14 +178,14 @@ def main_menu_handler(context, update):
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Общение',
-            # reply_markup=get_meetup_description_menu()
+            reply_markup=get_communication_menu(query.message.chat_id)
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id
         )
 
-        return 'NEXT'
+        return 'COMMUNICATION_MENU'
 
 
     elif query.data == 'donate':
@@ -199,6 +200,10 @@ def main_menu_handler(context, update):
         )
 
         return 'DONATE'
+
+
+def communication_menu_handler(context, update):
+    pass
 
 
 def meetup_description_menu_handler(context, update):
@@ -430,6 +435,7 @@ def handle_users_reply(update, context):
         'CONFIRM_MENU': confirm_menu_handler,
         'WAIT_EMAIL': wait_email_handler,
         'MAIN_MENU': main_menu_handler,
+        'COMMUNICATION_MENU': communication_menu_handler,
         'MEETUP_DESCRIPTION_MENU': meetup_description_menu_handler,
         'DONATE': start_without_shipping,
         'STAGE': stage_handler,

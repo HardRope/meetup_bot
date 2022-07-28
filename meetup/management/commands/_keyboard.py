@@ -1,6 +1,11 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from meetup.models import MeetupProgram, Stage, Block, Speaker, Question
+from meetup.models import (
+    Meetuper,
+    MeetupProgram,
+    Stage,
+    Speaker
+)
 
 
 def check_question(chat_id):
@@ -8,6 +13,7 @@ def check_question(chat_id):
     questions = speaker.received_questions.all()
 
     return speaker and questions
+
 
 def get_subscribtion_menu():
     inline_keyboard = [
@@ -73,7 +79,9 @@ def get_meetup_menu():
 def get_stage_menu(stage):
     stage = Stage.objects.get(id=stage)
     inline_keyboard = [
-        [InlineKeyboardButton(f'{block.start_time}\n{block.title}', callback_data=block.id)] for block in stage.blocks.all()
+        [
+            InlineKeyboardButton(f'{block.start_time}\n{block.title}', callback_data=block.id)
+        ] for block in stage.blocks.all()
     ]
     inline_keyboard.append([InlineKeyboardButton('Назад', callback_data='back')])
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
@@ -85,6 +93,19 @@ def get_back_menu():
     inline_keyboard = [
         [InlineKeyboardButton('Назад', callback_data='back')],
     ]
+
+    inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
+
+    return inline_kb_markup
+
+
+def get_communication_menu(chat_id):
+    inline_keyboard = []
+    if not Meetuper.objects.get(chat_id=chat_id).is_open_for_communication:
+        inline_keyboard.append([InlineKeyboardButton('Заполнить анкету', callback_data='form')])
+    if len(Meetuper.objects.filter(is_open_for_communication=True)) > 2:
+        inline_keyboard.append([InlineKeyboardButton('Пообщаться', callback_data='communicate')])
+    inline_keyboard.append([InlineKeyboardButton('В меню', callback_data='main_menu')])
 
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 
