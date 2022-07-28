@@ -12,6 +12,10 @@ from .models import (
 )
 
 
+class QuestionInline(admin.TabularInline):
+    model = Question
+
+
 @admin.register(Meetuper)
 class MeetuperAdmin(admin.ModelAdmin):
     list_display = [
@@ -24,6 +28,9 @@ class MeetuperAdmin(admin.ModelAdmin):
         'position',
         'is_open_for_communication',
     ]
+    inlines = [
+        QuestionInline,
+    ]
 
 
 @admin.register(Speaker)
@@ -33,6 +40,13 @@ class SpeakerAdmin(admin.ModelAdmin):
         'participant',
         'is_active',
     ]
+    inlines = [
+        QuestionInline,
+    ]
+
+
+class StageInline(admin.TabularInline):
+    model = Stage
 
 
 @admin.register(MeetupProgram)
@@ -44,6 +58,13 @@ class MeetupProgramAdmin(admin.ModelAdmin):
         'start_time',
         'end_time'
     ]
+    inlines = [
+        StageInline,
+    ]
+
+
+class BlockInline(admin.TabularInline):
+    model = Block
 
 
 @admin.register(Stage)
@@ -55,6 +76,13 @@ class StageAdmin(admin.ModelAdmin):
         'start_time',
         'end_time'
     ]
+    inlines = [
+        BlockInline,
+    ]
+
+
+class EventInline(admin.TabularInline):
+    model = Event
 
 
 @admin.register(Block)
@@ -66,6 +94,9 @@ class BlockAdmin(admin.ModelAdmin):
         'start_time',
         'end_time'
     ]
+    inlines = [
+        EventInline,
+    ]
 
 
 @admin.register(Event)
@@ -73,7 +104,7 @@ class EventAdmin(admin.ModelAdmin):
     list_filter = ['is_active', 'speaker']
     list_display = [
         'title',
-        'speaker',
+        # 'speaker',
         'block',
         'start_time',
         'end_time',
