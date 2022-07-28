@@ -28,7 +28,7 @@ from ._keyboard import (
     get_meetup_description_menu,
 )
 
-from meetup.models import Meetuper
+from meetup.models import Meetuper, MeetupProgram
 
 env = Env()
 env.read_env()
@@ -52,6 +52,8 @@ def start(context, update):
     first_name = update.message.chat.first_name
     last_name = update.message.chat.last_name
 
+    meetup = MeetupProgram.objects.last()
+
     Meetuper.objects.get_or_create(
         chat_id=tg_id,
         defaults={
@@ -60,9 +62,12 @@ def start(context, update):
         }
     )
 
-    message = '''
-    Приветствую! Вы подписались на чат-бота конференции "{conference.name}".
-    Подтвердите регистрацию на конференцию "{conference.name}" отправив нам свой e-mail. Обещаем не спамить.))
+    message = f'''
+    Приветствую! Вы подписались на чат-бота митапа "{meetup.title}".
+    Наш митап пройдет {meetup.date} с {meetup.start_time} до {meetup.end_time}.
+    
+    
+    Подтвердите регистрацию на митап "{meetup.title}" отправив нам свой e-mail. Обещаем не спамить.))
     А можете и не отправлять мы все равно вам рады.)))
     '''
     update.message.reply_text(
