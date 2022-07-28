@@ -22,8 +22,12 @@ from telegram.ext import (
 
 from ._keyboard import (
     get_subscribtion_menu,
+    get_main_menu,
+    get_donate_menu,
+    get_meetup_menu,
     get_meetup_description_menu,
 )
+
 from meetup.models import Meetuper
 
 env = Env()
@@ -44,11 +48,15 @@ def error(state, error):
 
 
 def start(context, update):
+    tg_id = update.message.chat.id
+    first_name = update.message.chat.first_name
+    last_name = update.message.chat.last_name
+
     Meetuper.objects.get_or_create(
-        chat_id=update.message.chat.id,
+        chat_id=tg_id,
         defaults={
-            'firstname': update.message.chat.first_name,
-            'lastname': update.message.chat.last_name,
+            'firstname': first_name,
+            'lastname': last_name,
         }
     )
 
@@ -96,9 +104,11 @@ def confirm_menu_handler(context, update):
 
 def wait_email_handler(context, update):
     chat_id = update.message.chat.id
+
     meetuper = Meetuper.objects.get(chat_id=chat_id)
-    meetuper.email = update.message['text']
+    meetuper.email = email
     meetuper.save()
+
     context.bot.send_message(
         chat_id=chat_id,
         text=f'Спасибо за подтверждение регистрации. Мы рады будем видеть Вас на митапе',
@@ -114,10 +124,10 @@ def wait_email_handler(context, update):
 
 def main_menu_handler(context, update):
     query = update.callback_query
-    if query.data == 'mitup':
+    if query.data == 'meetup':
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Расписание конференции',
+            text=f'Можете ознокомиться с программой митапа или задать вопрос любому спикеру',
             reply_markup=get_meetup_description_menu()
         )
         context.bot.delete_message(
@@ -125,7 +135,7 @@ def main_menu_handler(context, update):
             message_id=query.message.message_id
         )
 
-        return 'NEXT'
+        return 'MEETUP_DESCRIPTION_MENU'
 
     elif query.data == 'communication':
         context.bot.send_message(
@@ -141,8 +151,44 @@ def main_menu_handler(context, update):
         return 'NEXT'
 
 
-def start_without_shipping(update, context):
-    chat_id = update.message.chat.id
+    elif query.data == 'donate':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Ваш вклад в наше развитие позволит нам продолжать работу над крутыми митапами',
+            reply_markup=get_donate_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'DONATE'
+
+
+def meetup_description_menu_handler(context, update):
+    query = update.callback_query
+    context.bot.send_message(
+        chat_id=query.message.chat_id,
+        text=f'Программа митапа: \n',
+        reply_markup=get_meetup_menu()
+    )
+    context.bot.delete_message(
+        chat_id=query.message.chat_id,
+        message_id=query.message.message_id
+    )
+
+    return 'NEXT'
+
+
+def start_without_shipping(context, update):
+    query = update.callback_query
+
+    context.bot.delete_message(
+        chat_id=query.message.chat_id,
+        message_id=query.message.message_id
+    )
+
+    chat_id = query.message.chat.id
     payment_token = env.str('PAY_TOKEN')
     title = f'Donate №{chat_id}'
     description = 'Своим донатом вы помогаете организовать митап'
@@ -156,7 +202,7 @@ def start_without_shipping(update, context):
         payload,
         payment_token,
         currency,
-        prices
+        prices,
     )
 
 
@@ -178,12 +224,16 @@ def precheckout_callback(update, context):
 def successful_payment_callback(update, context):
     context.bot.send_message(
         chat_id=update.message.chat_id,
-        text='Спасибо за донат'
+        text='Спасибо за донат',
+        reply_markup=get_main_menu()
     )
+
     context.bot.delete_message(
         chat_id=update.message.chat_id,
-        message_id=update.message.message_id
+        message_id=update.message.message_id - 1
     )
+
+    return 'MAIN_MENU'
 
 
 def handle_users_reply(update, context):
@@ -207,6 +257,8 @@ def handle_users_reply(update, context):
         'CONFIRM_MENU': confirm_menu_handler,
         'WAIT_EMAIL': wait_email_handler,
         'MAIN_MENU': main_menu_handler,
+        'MEETUP_DESCRIPTION_MENU': meetup_description_menu_handler,
+        'DONATE': start_without_shipping,
     }
     print(user_state)
     state_handler = states_functions[user_state]
