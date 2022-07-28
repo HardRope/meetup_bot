@@ -1,3 +1,4 @@
+import json
 import logging
 from pprint import pprint
 from textwrap import dedent
@@ -26,10 +27,11 @@ from ._keyboard import (
     get_donate_menu,
     get_meetup_menu,
     get_stage_menu,
+    get_back_menu,
     get_meetup_description_menu,
 )
 
-from meetup.models import Meetuper, MeetupProgram, Stage
+from meetup.models import Meetuper, MeetupProgram, Stage, Block
 
 env = Env()
 env.read_env()
@@ -112,7 +114,7 @@ def wait_email_handler(context, update):
     chat_id = update.message.chat.id
 
     meetuper = Meetuper.objects.get(chat_id=chat_id)
-    meetuper.email = email
+    meetuper.email = update.message.text
     meetuper.save()
 
     context.bot.send_message(
@@ -190,9 +192,14 @@ def meetup_description_menu_handler(context, update):
 def stage_handler(context, update):
     query = update.callback_query
 
-    stages = MeetupProgram.objects.last().stages.all()
-
     if query.data.isdigit():
+        print(query.data)
+        user = f"user_tg_{query.message.chat_id}"
+        _database.set(
+            user,
+            json.dumps({'stage': query.data})
+        )
+
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'{Stage.objects.get(id=query.data).title}',
@@ -204,6 +211,69 @@ def stage_handler(context, update):
         )
 
         return 'BLOCK'
+
+    elif query.data == 'back':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Программа митапа: \n',
+            reply_markup=get_meetup_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'STAGE'
+
+    elif query.data == 'main_menu':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Можете ознокомиться с программой митапа или задать вопрос любому спикеру',
+            reply_markup=get_main_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
+
+
+def block_handler(context, update):
+    query = update.callback_query
+
+    if query.data.isdigit():
+        block = Block.objects.get(id=query.data)
+        message_text = f'''
+        {block.start_time} - {block.end_time} {block.title}
+        '''
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=dedent(message_text),
+            reply_markup=get_back_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'BLOCK'
+
+    else:
+        user = f'user_tg_{query.message.chat_id}'
+        stage_id = json.loads(_database.get(user))['stage']
+
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'{Stage.objects.get(id=stage_id).title}',
+            reply_markup=get_stage_menu(stage_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'STAGE'
 
 
 def start_without_shipping(context, update):
@@ -286,6 +356,7 @@ def handle_users_reply(update, context):
         'MEETUP_DESCRIPTION_MENU': meetup_description_menu_handler,
         'DONATE': start_without_shipping,
         'STAGE': stage_handler,
+        'BLOCK': block_handler,
     }
     print(user_state)
     state_handler = states_functions[user_state]
