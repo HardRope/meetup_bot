@@ -227,15 +227,15 @@ def stage_handler(context, update):
     elif query.data == 'main_menu':
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Можете ознокомиться с программой митапа или задать вопрос любому спикеру',
-            reply_markup=get_meetup_description_menu()
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu()
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id
         )
 
-        return 'MEETUP_DESCRIPTION_MENU'
+        return 'MAIN_MENU'
 
 
 def block_handler(context, update):
