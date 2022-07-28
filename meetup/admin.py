@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.shortcuts import redirect
+from django.urls import path
 
 from .models import (
     Meetuper,
@@ -10,6 +12,7 @@ from .models import (
     Question,
     Donation
 )
+from .utils import notify
 
 
 class QuestionInline(admin.TabularInline):
@@ -61,6 +64,29 @@ class MeetupProgramAdmin(admin.ModelAdmin):
     inlines = [
         StageInline,
     ]
+    change_list_template = 'meetups_change_list.html'
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('notify/', self.send_notifications),
+            path('program_changed/', self.send_program_notifications)
+        ]
+        return my_urls + urls
+
+    def send_notifications(self, request):
+        notify()
+        self.message_user(request, 'Оповещения отправлены')
+        return redirect('../')
+
+    def send_program_notifications(self, request):
+        notify()
+        self.message_user(
+            request,
+            'Оповещения об изменениях в программе отправлены'
+        )
+        return redirect('../')
+
 
 
 class BlockInline(admin.TabularInline):
@@ -104,7 +130,7 @@ class EventAdmin(admin.ModelAdmin):
     list_filter = ['is_active', 'speaker']
     list_display = [
         'title',
-        # 'speaker',
+        'speaker',
         'block',
         'start_time',
         'end_time',
