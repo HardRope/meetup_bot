@@ -31,6 +31,7 @@ class MeetuperAdmin(admin.ModelAdmin):
         'organization',
         'position',
         'is_open_for_communication',
+        'is_active',
     ]
     inlines = [
         QuestionInline,
