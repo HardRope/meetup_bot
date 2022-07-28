@@ -66,3 +66,12 @@ def get_stage_menu(stage):
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 
     return inline_kb_markup
+
+def get_back_menu():
+    inline_keyboard = [
+        [InlineKeyboardButton('Назад', callback_data='back')],
+    ]
+
+    inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
+
+    return inline_kb_markup
