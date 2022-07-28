@@ -15,6 +15,10 @@ def check_question(chat_id):
     return speaker and questions
 
 
+def check_communication(chat_id):
+    return Meetuper.objects.get(chat_id=chat_id).is_open_for_communication
+
+
 def get_subscribtion_menu():
     inline_keyboard = [
         [InlineKeyboardButton('Отправить E-mail', callback_data='mail')],
@@ -101,9 +105,11 @@ def get_back_menu():
 
 def get_communication_menu(chat_id):
     inline_keyboard = []
-    if not Meetuper.objects.get(chat_id=chat_id).is_open_for_communication:
+    open_for_communication_meetuper = Meetuper.objects.filter(is_open_for_communication=True)
+
+    if not check_communication(chat_id):
         inline_keyboard.append([InlineKeyboardButton('Заполнить анкету', callback_data='form')])
-    if len(Meetuper.objects.filter(is_open_for_communication=True)) > 2:
+    if check_communication(chat_id) and len(open_for_communication_meetuper) >= 2:
         inline_keyboard.append([InlineKeyboardButton('Пообщаться', callback_data='communicate')])
     inline_keyboard.append([InlineKeyboardButton('В меню', callback_data='main_menu')])
 

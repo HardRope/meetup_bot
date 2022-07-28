@@ -175,9 +175,13 @@ def main_menu_handler(context, update):
         return 'MEETUP_DESCRIPTION_MENU'
 
     elif query.data == 'communication':
+        message_text = '''
+        Здесь вы сможете заполнить анкету о себе и пообщаться с другими участниками митапа.
+        '''
+
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Общение',
+            text=dedent(message_text),
             reply_markup=get_communication_menu(query.message.chat_id)
         )
         context.bot.delete_message(
@@ -203,7 +207,46 @@ def main_menu_handler(context, update):
 
 
 def communication_menu_handler(context, update):
-    pass
+    query = update.callback_query
+
+    if query.data == 'main_menu':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu(query.message.chat_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
+
+    elif query.data == 'form':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Заполните анкету о себе',
+            # reply_markup=get_main_menu(query.message.chat_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'NEXT'
+
+    elif query.data == 'communicate':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Если есть желание можете пообщаться с этим участником',
+            # reply_markup=get_main_menu(query.message.chat_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'NEXT'
 
 
 def meetup_description_menu_handler(context, update):
