@@ -119,7 +119,7 @@ def wait_email_handler(context, update):
 
     context.bot.send_message(
         chat_id=chat_id,
-        text=f'Спасибо за подтверждение регистрации. Мы рады будем видеть Вас на митапе',
+        text=f'Рады видеть Вас на митапе',
         reply_markup=get_main_menu()
     )
     context.bot.delete_message(
@@ -193,7 +193,6 @@ def stage_handler(context, update):
     query = update.callback_query
 
     if query.data.isdigit():
-        print(query.data)
         user = f"user_tg_{query.message.chat_id}"
         _database.set(
             user,
@@ -229,14 +228,14 @@ def stage_handler(context, update):
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Можете ознокомиться с программой митапа или задать вопрос любому спикеру',
-            reply_markup=get_main_menu()
+            reply_markup=get_meetup_description_menu()
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id
         )
 
-        return 'MAIN_MENU'
+        return 'MEETUP_DESCRIPTION_MENU'
 
 
 def block_handler(context, update):
