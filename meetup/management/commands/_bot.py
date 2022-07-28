@@ -25,10 +25,11 @@ from ._keyboard import (
     get_main_menu,
     get_donate_menu,
     get_meetup_menu,
+    get_stage_menu,
     get_meetup_description_menu,
 )
 
-from meetup.models import Meetuper, MeetupProgram
+from meetup.models import Meetuper, MeetupProgram, Stage
 
 env = Env()
 env.read_env()
@@ -63,7 +64,7 @@ def start(context, update):
     )
 
     message = f'''
-    Приветствую! Вы подписались на чат-бота митапа "{meetup.title}".
+    Приветствую, {first_name}! Вы подписались на чат-бота митапа "{meetup.title}".
     Наш митап пройдет {meetup.date} с {meetup.start_time} до {meetup.end_time}.
     
     
@@ -172,6 +173,7 @@ def main_menu_handler(context, update):
 
 def meetup_description_menu_handler(context, update):
     query = update.callback_query
+
     context.bot.send_message(
         chat_id=query.message.chat_id,
         text=f'Программа митапа: \n',
@@ -182,7 +184,26 @@ def meetup_description_menu_handler(context, update):
         message_id=query.message.message_id
     )
 
-    return 'NEXT'
+    return 'STAGE'
+
+
+def stage_handler(context, update):
+    query = update.callback_query
+
+    stages = MeetupProgram.objects.last().stages.all()
+
+    if query.data.isdigit():
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'{Stage.objects.get(id=query.data).title}',
+            reply_markup=get_stage_menu(query.data)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'BLOCK'
 
 
 def start_without_shipping(context, update):
@@ -264,6 +285,7 @@ def handle_users_reply(update, context):
         'MAIN_MENU': main_menu_handler,
         'MEETUP_DESCRIPTION_MENU': meetup_description_menu_handler,
         'DONATE': start_without_shipping,
+        'STAGE': stage_handler,
     }
     print(user_state)
     state_handler = states_functions[user_state]
