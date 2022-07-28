@@ -103,7 +103,6 @@ def confirm_menu_handler(context, update):
 
 
 def wait_email_handler(context, update):
-    email = update.message['text']
     chat_id = update.message.chat.id
 
     meetuper = Meetuper.objects.get(chat_id=chat_id)

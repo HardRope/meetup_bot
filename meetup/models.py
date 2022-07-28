@@ -157,7 +157,6 @@ class Event(models.Model):
         return f'''
             {self.start_time} - {self.end_time}
             \n{self.title}
-            \n{self.speaker.partisipant.firstname} {self.speaker.partisipant.lastname}
         '''
 
     class Meta:
@@ -191,7 +190,7 @@ class Question(models.Model):
 
     def __str__(self):
         return f'''
-            Вопрос от {self.meetuper.lastname} к {self.speaker.partisipant.lastname}
+            Вопрос от {self.meetuper.lastname} к {self.speaker.participant.lastname}
         '''
 
     class Meta:
