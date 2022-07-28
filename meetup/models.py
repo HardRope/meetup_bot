@@ -45,6 +45,10 @@ class Meetuper(models.Model):
         'открыт к общению',
         default=False
     )
+    is_active = models.BooleanField(
+        'активный участник',
+        default=True
+    )
 
     def __str__(self):
         return f'{self.chat_id}: {self.firstname} {self.lastname}'
