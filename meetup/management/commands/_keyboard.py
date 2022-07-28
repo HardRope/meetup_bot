@@ -45,11 +45,11 @@ def get_donate_menu():
 
 
 def get_meetup_menu():
-    inline_keyboard = []
-
     meetup = MeetupProgram.objects.last()
-    for stage in meetup.stages.all():
-        inline_keyboard.append([InlineKeyboardButton(stage.title, callback_data=stage.id)])
+
+    inline_keyboard = [
+        [InlineKeyboardButton(stage.title, callback_data=stage.id)] for stage in meetup.stages.all()
+    ]
 
     inline_keyboard.append([InlineKeyboardButton('В меню', callback_data='main_menu')])
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
