@@ -28,7 +28,8 @@ from meetup.models import (
     Meetuper,
     MeetupProgram,
     Stage,
-    Block
+    Block,
+    Donation
 )
 
 env = Env()
@@ -339,6 +340,7 @@ def start_without_shipping(context, update):
             currency,
             prices,
         )
+        return 'MAIN_MENU'
     else:
         context.bot.send_message(
             chat_id=query.message.chat_id,
@@ -369,9 +371,17 @@ def precheckout_callback(update, context):
 
 
 def successful_payment_callback(update, context):
+    meetuper = Meetuper.objects.get(chat_id=update.message.chat.id)
+
+    Donation.objects.create(
+        meetuper=meetuper,
+        date=update.message.date,
+        amount=update.message.successful_payment.total_amount / 100,
+    )
+
     context.bot.send_message(
         chat_id=update.message.chat_id,
-        text='Спасибо за донат',
+        text='Рады видеть Вас на митапе',
         reply_markup=get_main_menu()
     )
 
