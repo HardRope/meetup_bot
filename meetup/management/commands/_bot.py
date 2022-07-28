@@ -258,11 +258,23 @@ def block_handler(context, update):
     if query.data.isdigit():
         block = Block.objects.get(id=query.data)
         message_text = f'''
-        {block.start_time} - {block.end_time} {block.title}
+        <b><i>{block.start_time} - {block.end_time}
+        Блок "{block.title}"</i></b>
+
         '''
+
+        for event in block.events.all():
+            message_text += f'''
+            <b>{event.title}</b> 
+            {event.start_time} - {event.end_time}
+            '''
+            if event.speaker:
+                message_text += f'{event.speaker.participant.firstname} {event.speaker.participant.lastname}\n'
+
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=dedent(message_text),
+            parse_mode='HTML',
             reply_markup=get_back_menu()
         )
         context.bot.delete_message(
