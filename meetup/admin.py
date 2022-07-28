@@ -10,9 +10,10 @@ from .models import (
     Block,
     Event,
     Question,
-    Donation
+    Donation,
+    Notification
 )
-from .utils import notify
+from .utils import notify_program_change, send_notification
 
 
 class QuestionInline(admin.TabularInline):
@@ -30,6 +31,7 @@ class MeetuperAdmin(admin.ModelAdmin):
         'organization',
         'position',
         'is_open_for_communication',
+        'is_active',
     ]
     inlines = [
         QuestionInline,
@@ -75,18 +77,17 @@ class MeetupProgramAdmin(admin.ModelAdmin):
         return my_urls + urls
 
     def send_notifications(self, request):
-        notify()
+        send_notification()
         self.message_user(request, 'Оповещения отправлены')
         return redirect('../')
 
     def send_program_notifications(self, request):
-        notify()
+        notify_program_change()
         self.message_user(
             request,
             'Оповещения об изменениях в программе отправлены'
         )
         return redirect('../')
-
 
 
 class BlockInline(admin.TabularInline):
@@ -161,4 +162,13 @@ class DonationAdmin(admin.ModelAdmin):
         'meetuper',
         'date',
         'amount',
+    ]
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_filter = ['created_at']
+    list_display = [
+        'text',
+        'created_at',
     ]

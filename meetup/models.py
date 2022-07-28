@@ -45,6 +45,10 @@ class Meetuper(models.Model):
         'открыт к общению',
         default=False
     )
+    is_active = models.BooleanField(
+        'активный участник',
+        default=True
+    )
 
     def __str__(self):
         return f'{self.chat_id}: {self.firstname} {self.lastname}'
@@ -213,3 +217,18 @@ class Donation(models.Model):
     class Meta:
         verbose_name = 'Донат'
         verbose_name_plural = 'Донаты'
+
+
+class Notification(models.Model):
+    text = models.TextField('текст объявления')
+    created_at = models.DateTimeField(
+        'время создания объявления',
+        auto_now=True
+    )
+    
+    def __str__(self):
+        return f'Объявление от {self.created_at}'
+
+    class Meta:
+        verbose_name = 'Объявление'
+        verbose_name_plural = 'Объявления'
