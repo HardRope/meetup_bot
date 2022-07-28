@@ -176,17 +176,31 @@ def main_menu_handler(context, update):
 def meetup_description_menu_handler(context, update):
     query = update.callback_query
 
-    context.bot.send_message(
-        chat_id=query.message.chat_id,
-        text=f'Программа митапа: \n',
-        reply_markup=get_meetup_menu()
-    )
-    context.bot.delete_message(
-        chat_id=query.message.chat_id,
-        message_id=query.message.message_id
-    )
+    if query.data == 'description':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Программа митапа: \n',
+            reply_markup=get_meetup_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
 
-    return 'STAGE'
+        return 'STAGE'
+
+    elif query.data == 'main_menu':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
 
 
 def stage_handler(context, update):

@@ -27,6 +27,7 @@ def get_meetup_description_menu():
     inline_keyboard = [
         [InlineKeyboardButton('Посмотреть программу мероприятия', callback_data='description')],
         [InlineKeyboardButton('Задать вопрос {speaker}', callback_data='question')],
+        [InlineKeyboardButton('В меню', callback_data='main_menu')]
     ]
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 
