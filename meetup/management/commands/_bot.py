@@ -28,6 +28,7 @@ from meetup.models import (
     Meetuper,
     MeetupProgram,
     Stage,
+    Speaker,
     Block,
     Donation
 )
@@ -64,17 +65,32 @@ def start(context, update):
         }
     )
 
-    message = f'''
-    Приветствую, {first_name}! 
-    Вы подписались на чат-бота митапа <b><i>"{meetup.title}"</i></b>.
-    Наш митап пройдет {meetup.date} с {meetup.start_time} до {meetup.end_time}.
-    
-    
-    Подтвердите регистрацию на митап <b><i>"{meetup.title}"</i></b> отправив нам свой e-mail. Обещаем не спамить.))
-    А можете и не отправлять мы все равно вам рады.)))
-    '''
+    if Speaker.objects.filter(participant__chat_id=tg_id):
+        message_text = f'''
+        Приветствую, {first_name}!         
+        Вы подписались на чат-бота митапа <b><i>"{meetup.title}"</i></b>.
+        Наш митап пройдет {meetup.date} с {meetup.start_time} до {meetup.end_time}.
+        
+        <b>Рады видеть Вас в качестве спикера на нашем митапе!</b>
+        
+        
+        Подтвердите регистрацию на митап <b><i>"{meetup.title}"</i></b> отправив нам свой e-mail. Обещаем не спамить.))
+        А можете и не отправлять мы все равно вам рады.)))
+        '''
+
+    else:
+        message_text = f'''
+        Приветствую, {first_name}! 
+        Вы подписались на чат-бота митапа <b><i>"{meetup.title}"</i></b>.
+        Наш митап пройдет {meetup.date} с {meetup.start_time} до {meetup.end_time}.
+        
+        
+        Подтвердите регистрацию на митап <b><i>"{meetup.title}"</i></b> отправив нам свой e-mail. Обещаем не спамить.))
+        А можете и не отправлять мы все равно вам рады.)))
+        '''
+
     update.message.reply_text(
-        text=dedent(message),
+        text=dedent(message_text),
         parse_mode='HTML',
         reply_markup=get_subscribtion_menu()
     )
@@ -89,7 +105,7 @@ def confirm_menu_handler(context, update):
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Спасибо за подтверждение регистрации. Мы рады будем видеть Вас на митапе',
-            reply_markup=get_main_menu()
+            reply_markup=get_main_menu(query.message.chat_id)
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
@@ -129,7 +145,7 @@ def wait_email_handler(context, update):
         chat_id=chat_id,
         text=f'Рады видеть Вас на митапе <b><i>"{meetup.title}"</i></b>.',
         parse_mode='HTML',
-        reply_markup=get_main_menu()
+        reply_markup=get_main_menu(chat_id)
     )
     context.bot.delete_message(
         chat_id=chat_id,
@@ -205,7 +221,7 @@ def meetup_description_menu_handler(context, update):
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Рады видеть Вас на митапе',
-            reply_markup=get_main_menu()
+            reply_markup=get_main_menu(query.message.chat_id)
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
@@ -254,7 +270,7 @@ def stage_handler(context, update):
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Рады видеть Вас на митапе',
-            reply_markup=get_main_menu()
+            reply_markup=get_main_menu(query.message.chat_id)
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
@@ -345,7 +361,7 @@ def start_without_shipping(context, update):
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Рады видеть Вас на митапе',
-            reply_markup=get_main_menu()
+            reply_markup=get_main_menu(query.message.chat_id)
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
@@ -382,7 +398,7 @@ def successful_payment_callback(update, context):
     context.bot.send_message(
         chat_id=update.message.chat_id,
         text='Рады видеть Вас на митапе',
-        reply_markup=get_main_menu()
+        reply_markup=get_main_menu(update.message.chat_id)
     )
 
     context.bot.delete_message(

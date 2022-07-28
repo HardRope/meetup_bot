@@ -1,6 +1,13 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from meetup.models import MeetupProgram, Stage, Block
+from meetup.models import MeetupProgram, Stage, Block, Speaker, Question
+
+
+def check_question(chat_id):
+    speaker = Speaker.objects.filter(participant__chat_id=chat_id).first()
+    questions = speaker.received_questions.all()
+
+    return speaker and questions
 
 def get_subscribtion_menu():
     inline_keyboard = [
@@ -12,12 +19,16 @@ def get_subscribtion_menu():
     return inline_kb_markup
 
 
-def get_main_menu():
+def get_main_menu(chat_id):
     inline_keyboard = [
         [InlineKeyboardButton('Мероприятие', callback_data='meetup')],
         [InlineKeyboardButton('Общение', callback_data='communication')],
         [InlineKeyboardButton('Донат', callback_data='donate')],
     ]
+
+    if check_question(chat_id):
+        inline_keyboard.append([InlineKeyboardButton('Вопросы от пользователей', callback_data='questions')])
+
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 
     return inline_kb_markup
@@ -68,6 +79,7 @@ def get_stage_menu(stage):
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 
     return inline_kb_markup
+
 
 def get_back_menu():
     inline_keyboard = [
