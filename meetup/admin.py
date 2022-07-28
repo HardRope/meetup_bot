@@ -64,7 +64,7 @@ class MeetupProgramAdmin(admin.ModelAdmin):
     inlines = [
         StageInline,
     ]
-    change_list_template = 'meetups_change_list.html'
+    change_form_template = 'meetups_change_form.html'
 
     def get_urls(self):
         urls = super().get_urls()
