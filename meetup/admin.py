@@ -12,6 +12,10 @@ from .models import (
 )
 
 
+class QuestionInline(admin.TabularInline):
+    model = Question
+
+
 @admin.register(Meetuper)
 class MeetuperAdmin(admin.ModelAdmin):
     list_display = [
@@ -24,6 +28,9 @@ class MeetuperAdmin(admin.ModelAdmin):
         'position',
         'is_open_for_communication',
     ]
+    inlines = [
+        QuestionInline,
+    ]
 
 
 @admin.register(Speaker)
@@ -32,6 +39,9 @@ class SpeakerAdmin(admin.ModelAdmin):
     list_display = [
         'participant',
         'is_active',
+    ]
+    inlines = [
+        QuestionInline,
     ]
 
 
