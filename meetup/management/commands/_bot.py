@@ -315,27 +315,42 @@ def block_handler(context, update):
 def start_without_shipping(context, update):
     query = update.callback_query
 
-    context.bot.delete_message(
-        chat_id=query.message.chat_id,
-        message_id=query.message.message_id
-    )
+    if query.data.isdigit():
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
 
-    chat_id = query.message.chat.id
-    payment_token = env.str('PAY_TOKEN')
-    title = f'Donate №{chat_id}'
-    description = 'Своим донатом вы помогаете организовать митап'
-    payload = 'Custom_order'
-    currency = 'RUB'
-    prices = [LabeledPrice('Test', 100000)]
-    context.bot.sendInvoice(
-        chat_id,
-        title,
-        description,
-        payload,
-        payment_token,
-        currency,
-        prices,
-    )
+        chat_id = query.message.chat.id
+        payment_token = env.str('PAY_TOKEN')
+        title = f'Donate №{chat_id}'
+        description = 'Своим донатом вы помогаете организовать митап'
+        payload = 'Custom_order'
+        currency = 'RUB'
+        prices = [
+            LabeledPrice('Test', int(query.data) * 100),
+        ]
+        context.bot.sendInvoice(
+            chat_id,
+            title,
+            description,
+            payload,
+            payment_token,
+            currency,
+            prices,
+        )
+    else:
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
 
 
 def precheckout_callback(update, context):
