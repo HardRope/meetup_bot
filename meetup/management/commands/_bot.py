@@ -170,7 +170,7 @@ def meetup_description_menu_handler(context, update):
     query = update.callback_query
     context.bot.send_message(
         chat_id=query.message.chat_id,
-        text=f'Программа митапа',
+        text=f'Программа митапа: \n',
         reply_markup=get_meetup_menu()
     )
     context.bot.delete_message(
