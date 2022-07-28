@@ -217,3 +217,18 @@ class Donation(models.Model):
     class Meta:
         verbose_name = 'Донат'
         verbose_name_plural = 'Донаты'
+
+
+class Notification(models.Model):
+    text = models.TextField('текст объявления')
+    created_at = models.DateTimeField(
+        'время создания объявления',
+        auto_now=True
+    )
+    
+    def __str__(self):
+        return f'Объявление от {self.created_at}'
+
+    class Meta:
+        verbose_name = 'Объявление'
+        verbose_name_plural = 'Объявления'
