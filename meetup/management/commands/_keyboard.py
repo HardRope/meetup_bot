@@ -57,4 +57,12 @@ def get_meetup_menu():
     return inline_kb_markup
 
 
+def get_stage_menu(stage):
+    stage = Stage.objects.get(id=stage)
+    inline_keyboard = [
+        [InlineKeyboardButton(f'{block.start_time}\n{block.title}', callback_data=block.id)] for block in stage.blocks.all()
+    ]
+    inline_keyboard.append([InlineKeyboardButton('Назад', callback_data='back')])
+    inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 
+    return inline_kb_markup
