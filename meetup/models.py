@@ -157,7 +157,6 @@ class Event(models.Model):
         return f'''
             {self.start_time} - {self.end_time}
             \n{self.title}
-            \n{self.speaker.participant.firstname} {self.speaker.participant.lastname}
         '''
 
     class Meta:

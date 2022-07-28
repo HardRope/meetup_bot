@@ -35,6 +35,10 @@ class SpeakerAdmin(admin.ModelAdmin):
     ]
 
 
+class StageInline(admin.TabularInline):
+    model = Stage
+
+
 @admin.register(MeetupProgram)
 class MeetupProgramAdmin(admin.ModelAdmin):
     list_filter = ['date']
@@ -44,6 +48,13 @@ class MeetupProgramAdmin(admin.ModelAdmin):
         'start_time',
         'end_time'
     ]
+    inlines = [
+        StageInline,
+    ]
+
+
+class BlockInline(admin.TabularInline):
+    model = Block
 
 
 @admin.register(Stage)
@@ -55,6 +66,13 @@ class StageAdmin(admin.ModelAdmin):
         'start_time',
         'end_time'
     ]
+    inlines = [
+        BlockInline,
+    ]
+
+
+class EventInline(admin.TabularInline):
+    model = Event
 
 
 @admin.register(Block)
@@ -66,6 +84,9 @@ class BlockAdmin(admin.ModelAdmin):
         'start_time',
         'end_time'
     ]
+    inlines = [
+        EventInline,
+    ]
 
 
 @admin.register(Event)
@@ -73,7 +94,7 @@ class EventAdmin(admin.ModelAdmin):
     list_filter = ['is_active', 'speaker']
     list_display = [
         'title',
-        'speaker',
+        # 'speaker',
         'block',
         'start_time',
         'end_time',
