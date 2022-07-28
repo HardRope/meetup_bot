@@ -1,6 +1,5 @@
 import json
 import logging
-from pprint import pprint
 from textwrap import dedent
 
 import redis
@@ -15,12 +14,6 @@ from telegram.ext import (
     PreCheckoutQueryHandler,
 )
 
-# from _keyboard import (
-#     get_subscribtion_menu,
-#     get_main_menu,
-#     get_meetup_description_menu,
-# )
-
 from ._keyboard import (
     get_subscribtion_menu,
     get_main_menu,
@@ -31,7 +24,12 @@ from ._keyboard import (
     get_meetup_description_menu,
 )
 
-from meetup.models import Meetuper, MeetupProgram, Stage, Block
+from meetup.models import (
+    Meetuper,
+    MeetupProgram,
+    Stage,
+    Block
+)
 
 env = Env()
 env.read_env()
@@ -66,15 +64,17 @@ def start(context, update):
     )
 
     message = f'''
-    Приветствую, {first_name}! Вы подписались на чат-бота митапа "{meetup.title}".
+    Приветствую, {first_name}! 
+    Вы подписались на чат-бота митапа <b><i>"{meetup.title}"</i></b>.
     Наш митап пройдет {meetup.date} с {meetup.start_time} до {meetup.end_time}.
     
     
-    Подтвердите регистрацию на митап "{meetup.title}" отправив нам свой e-mail. Обещаем не спамить.))
+    Подтвердите регистрацию на митап <b><i>"{meetup.title}"</i></b> отправив нам свой e-mail. Обещаем не спамить.))
     А можете и не отправлять мы все равно вам рады.)))
     '''
     update.message.reply_text(
         text=dedent(message),
+        parse_mode='HTML',
         reply_markup=get_subscribtion_menu()
     )
 
@@ -98,9 +98,14 @@ def confirm_menu_handler(context, update):
         return 'MAIN_MENU'
 
     elif query.data == 'mail':
+        message_text = f'''
+        Спасибо за подтверждение регистрации. 
+        
+        Для завершения регистрации введите ваш email
+        '''
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Спасибо за подтверждение регистрации. Для завершения регистрации введите ваш email',
+            text=dedent(message_text),
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
@@ -117,9 +122,12 @@ def wait_email_handler(context, update):
     meetuper.email = update.message.text
     meetuper.save()
 
+    meetup = MeetupProgram.objects.last()
+
     context.bot.send_message(
         chat_id=chat_id,
-        text=f'Рады видеть Вас на митапе',
+        text=f'Рады видеть Вас на митапе <b><i>"{meetup.title}"</i></b>.',
+        parse_mode='HTML',
         reply_markup=get_main_menu()
     )
     context.bot.delete_message(
@@ -133,9 +141,12 @@ def wait_email_handler(context, update):
 def main_menu_handler(context, update):
     query = update.callback_query
     if query.data == 'meetup':
+        meetup = MeetupProgram.objects.last()
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Можете ознокомиться с программой митапа или задать вопрос любому спикеру',
+            text=f'Можете ознокомиться с программой митапа <b><i>"{meetup.title}"</i></b>.'
+                 f' или задать вопрос любому спикеру',
+            parse_mode='HTML',
             reply_markup=get_meetup_description_menu()
         )
         context.bot.delete_message(
@@ -258,11 +269,23 @@ def block_handler(context, update):
     if query.data.isdigit():
         block = Block.objects.get(id=query.data)
         message_text = f'''
-        {block.start_time} - {block.end_time} {block.title}
+        <b><i>{block.start_time} - {block.end_time}
+        Блок "{block.title}"</i></b>
+
         '''
+
+        for event in block.events.all():
+            message_text += f'''
+            <b>{event.title}</b> 
+            {event.start_time} - {event.end_time}
+            '''
+            if event.speaker:
+                message_text += f'{event.speaker.participant.firstname} {event.speaker.participant.lastname}\n'
+
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=dedent(message_text),
+            parse_mode='HTML',
             reply_markup=get_back_menu()
         )
         context.bot.delete_message(
@@ -292,27 +315,42 @@ def block_handler(context, update):
 def start_without_shipping(context, update):
     query = update.callback_query
 
-    context.bot.delete_message(
-        chat_id=query.message.chat_id,
-        message_id=query.message.message_id
-    )
+    if query.data.isdigit():
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
 
-    chat_id = query.message.chat.id
-    payment_token = env.str('PAY_TOKEN')
-    title = f'Donate №{chat_id}'
-    description = 'Своим донатом вы помогаете организовать митап'
-    payload = 'Custom_order'
-    currency = 'RUB'
-    prices = [LabeledPrice('Test', 100000)]
-    context.bot.sendInvoice(
-        chat_id,
-        title,
-        description,
-        payload,
-        payment_token,
-        currency,
-        prices,
-    )
+        chat_id = query.message.chat.id
+        payment_token = env.str('PAY_TOKEN')
+        title = f'Donate №{chat_id}'
+        description = 'Своим донатом вы помогаете организовать митап'
+        payload = 'Custom_order'
+        currency = 'RUB'
+        prices = [
+            LabeledPrice('Test', int(query.data) * 100),
+        ]
+        context.bot.sendInvoice(
+            chat_id,
+            title,
+            description,
+            payload,
+            payment_token,
+            currency,
+            prices,
+        )
+    else:
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
 
 
 def precheckout_callback(update, context):

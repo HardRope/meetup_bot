@@ -36,7 +36,8 @@ def get_meetup_description_menu():
 
 def get_donate_menu():
     inline_keyboard = [
-        [InlineKeyboardButton('Пожертвовать на мероприятие', callback_data='donate')],
+        [InlineKeyboardButton('Пожертвовать 500 рублей', callback_data=500)],
+        [InlineKeyboardButton('Пожертвовать 1000 рублей', callback_data=1000)],
         [InlineKeyboardButton('В меню', callback_data='main_menu')],
     ]
 
