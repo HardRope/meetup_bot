@@ -136,3 +136,31 @@ def get_stage_speakers(stage_id):
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 
     return inline_kb_markup
+
+
+def get_form_menu():
+    inline_keyboard = [
+        [InlineKeyboardButton('Заполнить анкету', callback_data='form')],
+        [InlineKeyboardButton('В меню', callback_data='main_menu')],
+    ]
+
+    inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
+
+    return inline_kb_markup
+
+
+def get_submit_form_menu():
+    inline_keyboard = [
+        [InlineKeyboardButton('Ввести Фамилию', callback_data='last_name')],
+        [InlineKeyboardButton('Ввести Имя', callback_data='first_name')],
+        [InlineKeyboardButton('Ввести Телефон', callback_data='phone')],
+        [InlineKeyboardButton('Ввести Email', callback_data='email')],
+        [InlineKeyboardButton('Ввести Компанию', callback_data='company')],
+        [InlineKeyboardButton('Ввести Должность', callback_data='position')],
+        [InlineKeyboardButton('Отправить анкету', callback_data='submit_form')],
+        [InlineKeyboardButton('В меню', callback_data='main_menu')],
+    ]
+
+    inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
+
+    return inline_kb_markup
