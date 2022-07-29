@@ -436,6 +436,19 @@ def block_handler(context, update):
 
         return 'BLOCK'
 
+    elif query.data == 'back':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Программа митапа: \n',
+            reply_markup=get_meetup_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'STAGE'
+    
     else:
         user = f'user_tg_{query.message.chat_id}'
         stage_id = json.loads(_database.get(user))['stage']
