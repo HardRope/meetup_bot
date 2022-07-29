@@ -27,6 +27,7 @@ from ._keyboard import (
     get_stage_speakers,
     get_form_menu,
     get_contact_menu,
+    get_next_menu,
 )
 
 from meetup.models import (
@@ -243,15 +244,10 @@ def communication_menu_handler(context, update):
     elif query.data == 'form':
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Заполните анкету о себе',
-            reply_markup=get_form_menu()
-        )
-        context.bot.delete_message(
-            chat_id=query.message.chat_id,
-            message_id=query.message.message_id
+            text=f'Введите ваше имя',
         )
 
-        return 'FORM_MENU'
+        return 'FIRSTNAME'
 
     elif query.data == 'communicate':
         meetupers_id = [
@@ -316,8 +312,82 @@ def chat_handler(context, update):
         return 'MAIN_MENU'
 
 
-def form_menu_handler(context, update):
-    pass
+def firstname_handler(context, update):
+    meetuper = Meetuper.objects.get(chat_id=update.message.chat_id)
+    meetuper.firstname = update.message.text
+    meetuper.save()
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text=f'Введите вашу фамилию',
+    )
+
+    return 'LASTNAME'
+
+
+def lastname_handler(context, update):
+    meetuper = Meetuper.objects.get(chat_id=update.message.chat_id)
+    meetuper.lastname = update.message.text
+    meetuper.save()
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text=f'Укажите место работы',
+    )
+
+    return 'ORGANIZATION'
+
+
+def organization_handler(context, update):
+    meetuper = Meetuper.objects.get(chat_id=update.message.chat_id)
+    meetuper.organization = update.message.text
+    meetuper.save()
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text=f'Укажите вашу должность',
+    )
+
+    return 'POSITION'
+
+
+def position_handler(context, update):
+    meetuper = Meetuper.objects.get(chat_id=update.message.chat_id)
+    meetuper.position = update.message.text
+    meetuper.save()
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text=f'Введите ваш номер телефона',
+    )
+
+    return 'PHONENUMBER'
+
+
+def phonenumber_handler(context, update):
+    meetuper = Meetuper.objects.get(chat_id=update.message.chat_id)
+    meetuper.phone_number = update.message.text
+    meetuper.save()
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text=f'Введите ваш email',
+    )
+
+    return 'EMAIL'
+
+
+def email_handler(context, update):
+    meetuper = Meetuper.objects.get(chat_id=update.message.chat_id)
+    meetuper.email = update.message.text
+    meetuper.is_open_for_communication = True
+    meetuper.save()
+    message_text = '''
+    Здесь вы сможете заполнить анкету о себе и пообщаться с другими участниками митапа.
+    '''
+
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text=dedent(message_text),
+        reply_markup=get_communication_menu(update.message.chat_id)
+    )
+
+    return 'COMMUNICATION_MENU'
 
 
 def meetup_description_menu_handler(context, update):
@@ -658,8 +728,13 @@ def handle_users_reply(update, context):
         'BLOCK': block_handler,
         'QUESTIONS': get_questions,
         'SPEAKERS': speakers_handler,
-        'FORM_MENU': form_menu_handler,
         'CHAT': chat_handler,
+        'FIRSTNAME': firstname_handler,
+        'LASTNAME': lastname_handler,
+        'ORGANIZATION': organization_handler,
+        'POSITION': position_handler,
+        'PHONENUMBER': phonenumber_handler,
+        'EMAIL': email_handler,
     }
     print(user_state)
     state_handler = states_functions[user_state]
