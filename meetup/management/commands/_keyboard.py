@@ -109,7 +109,7 @@ def get_communication_menu(chat_id):
 
     if not check_communication(chat_id):
         inline_keyboard.append([InlineKeyboardButton('Заполнить анкету', callback_data='form')])
-    if check_communication(chat_id) and len(open_for_communication_meetuper) >= 2:
+    if check_communication(chat_id):
         inline_keyboard.append([InlineKeyboardButton('Пообщаться', callback_data='communicate')])
     inline_keyboard.append([InlineKeyboardButton('В меню', callback_data='main_menu')])
 
@@ -149,17 +149,19 @@ def get_form_menu():
     return inline_kb_markup
 
 
-def get_contact_menu(chat_id):
-    meetuper = Meetuper.objects.get(chat_id=chat_id)
+def get_contact_menu(chat_id=0):
+    inline_keyboard = []
+    if chat_id:
+        meetuper = Meetuper.objects.get(chat_id=chat_id)
+        inline_keyboard.append(
+            [InlineKeyboardButton(
+                f'Начать чат c {meetuper.lastname} {meetuper.firstname}',
+                callback_data=f'chat {meetuper.chat_id}',
+                url=f'tg://user?id={meetuper.chat_id}'
+            )]
+        )
+    inline_keyboard.append([InlineKeyboardButton('В меню', callback_data='main_menu')])
 
-    inline_keyboard = [
-        [InlineKeyboardButton(
-            f'Начать чат c {meetuper.lastname} {meetuper.firstname}',
-            callback_data=f'chat {meetuper.chat_id}',
-            url=f'tg://user?id={meetuper.chat_id}'
-        )],
-        [InlineKeyboardButton('В меню', callback_data='main_menu')],
-    ]
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 
     return inline_kb_markup
