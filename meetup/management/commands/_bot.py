@@ -27,7 +27,7 @@ from ._keyboard import (
     get_stage_speakers,
     get_form_menu,
     get_contact_menu,
-    get_next_menu,
+    # get_next_menu,
 )
 
 from meetup.models import (
@@ -196,7 +196,6 @@ def main_menu_handler(context, update):
 
         return 'COMMUNICATION_MENU'
 
-
     elif query.data == 'donate':
         context.bot.send_message(
             chat_id=query.message.chat_id,
@@ -225,7 +224,7 @@ def main_menu_handler(context, update):
             message_id=query.message.message_id
         )
 
-        return 'DONATE'
+        return 'QUESTIONS'
 
 
 def communication_menu_handler(context, update):
@@ -254,10 +253,12 @@ def communication_menu_handler(context, update):
 
     elif query.data == 'communicate':
         meetupers_id = [
-            meetuper.chat_id for meetuper in Meetuper.objects.filter(is_open_for_communication=True)
+            meetuper.chat_id for meetuper in Meetuper.objects.
+            filter(is_open_for_communication=True).
+            exclude(chat_id=query.message.chat_id)
         ]
 
-        if len(meetupers_id) >= 2:
+        if len(meetupers_id) >= 1:
             communicate_id = random.choice(meetupers_id)
             meetuper = Meetuper.objects.get(chat_id=communicate_id)
 
@@ -559,7 +560,6 @@ def block_handler(context, update):
 
 def get_questions(tg_id):
     speaker = Meetuper.objects.get(chat_id=tg_id).speaker
-
     questions_query = speaker.received_questions.all()
     questions_print = ''
 

@@ -9,10 +9,11 @@ from meetup.models import (
 
 
 def check_question(chat_id):
-    speaker = Speaker.objects.filter(participant__chat_id=chat_id).first()
-    questions = speaker.received_questions.all()
-
-    return speaker and questions
+    speaker = Speaker.objects.exclude(is_active=False).filter(participant__chat_id=chat_id).last()
+    if speaker:
+        questions = speaker.received_questions.all()
+        return speaker and questions
+    return False
 
 
 def check_communication(chat_id):
