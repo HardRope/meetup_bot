@@ -149,18 +149,17 @@ def get_form_menu():
     return inline_kb_markup
 
 
-def get_submit_form_menu():
+def get_contact_menu(chat_id):
+    meetuper = Meetuper.objects.get(chat_id=chat_id)
+
     inline_keyboard = [
-        [InlineKeyboardButton('Ввести Фамилию', callback_data='last_name')],
-        [InlineKeyboardButton('Ввести Имя', callback_data='first_name')],
-        [InlineKeyboardButton('Ввести Телефон', callback_data='phone')],
-        [InlineKeyboardButton('Ввести Email', callback_data='email')],
-        [InlineKeyboardButton('Ввести Компанию', callback_data='company')],
-        [InlineKeyboardButton('Ввести Должность', callback_data='position')],
-        [InlineKeyboardButton('Отправить анкету', callback_data='submit_form')],
+        [InlineKeyboardButton(
+            f'Начать чат c {meetuper.lastname} {meetuper.firstname}',
+            callback_data=f'chat {meetuper.chat_id}',
+            url=f'tg://user?id={meetuper.chat_id}'
+        )],
         [InlineKeyboardButton('В меню', callback_data='main_menu')],
     ]
-
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 
     return inline_kb_markup

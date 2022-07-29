@@ -1,10 +1,11 @@
 import json
 import logging
+import random
 from textwrap import dedent
 
 import redis
 from environs import Env
-from telegram import LabeledPrice
+from telegram import LabeledPrice, Contact
 from telegram.ext import (
     Filters,
     Updater,
@@ -25,7 +26,7 @@ from ._keyboard import (
     get_communication_menu,
     get_stage_speakers,
     get_form_menu,
-    get_submit_form_menu,
+    get_contact_menu,
 )
 
 from meetup.models import (
@@ -243,7 +244,7 @@ def communication_menu_handler(context, update):
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Заполните анкету о себе',
-            reply_markup=get_submit_form_menu()
+            reply_markup=get_form_menu()
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
@@ -253,20 +254,33 @@ def communication_menu_handler(context, update):
         return 'FORM_MENU'
 
     elif query.data == 'communicate':
-        context.bot.send_message(
-            chat_id=query.message.chat_id,
-            text=f'Если есть желание можете пообщаться с этим участником',
-            # reply_markup=get_main_menu(query.message.chat_id)
+        meetupers_id = [
+            meetuper.chat_id for meetuper in Meetuper.objects.filter(is_open_for_communication=True)
+        ]
+        communicate_id = random.choice(meetupers_id)
+        meetuper = Meetuper.objects.get(chat_id=communicate_id)
+
+        contact = Contact(
+            phone_number='+375291234567',
+            first_name=meetuper.firstname,
+            user_id=communicate_id,
         )
+
+        context.bot.send_contact(
+            chat_id=query.message.chat_id,
+            contact=contact,
+            reply_markup=get_contact_menu(communicate_id)
+        )
+
         context.bot.delete_message(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id
         )
 
-        return 'NEXT'
+        return 'CHAT'
 
 
-def form_menu_handler(context, update):
+def chat_handler(context, update):
     query = update.callback_query
 
     if query.data == 'main_menu':
@@ -281,34 +295,17 @@ def form_menu_handler(context, update):
         )
 
         return 'MAIN_MENU'
-
-    elif query.data == 'first_name':
-        context.bot.send_message(
-            chat_id=query.message.chat_id,
-            text=f'Введите Ваше имя',
-            reply_markup=get_submit_form_menu()
-        )
-        context.bot.delete_message(
-            chat_id=query.message.chat_id,
-            message_id=query.message.message_id
-        )
-        return 'FORM'
+    # else:
+    #     chat_id = int(query.data.split(' ')[-1])
+    #     context.bot.send_message(
+    #         chat_id=chat_id,
+    #         text=f'Вас приветствует митап!',
+    #     )
+    #     return 'CHAT'
 
 
-def meetuper_form_handler(context, update):
-    query = update.callback_query
-
-    if query.data == 'first_name':
-        context.bot.send_message(
-            chat_id=query.message.chat_id,
-            text=f'Введите Ваше имя',
-            reply_markup=get_submit_form_menu()
-        )
-        context.bot.delete_message(
-            chat_id=query.message.chat_id,
-            message_id=query.message.message_id
-        )
-        return 'FORM'
+def form_menu_handler(context, update):
+    pass
 
 
 def meetup_description_menu_handler(context, update):
@@ -637,7 +634,7 @@ def handle_users_reply(update, context):
         'QUESTIONS': get_questions,
         'SPEAKERS': speakers_handler,
         'FORM_MENU': form_menu_handler,
-        'FORM': meetuper_form_handler,
+        'CHAT': chat_handler,
     }
     print(user_state)
     state_handler = states_functions[user_state]
