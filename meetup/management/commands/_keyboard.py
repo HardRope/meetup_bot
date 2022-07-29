@@ -47,7 +47,7 @@ def get_main_menu(chat_id):
 def get_meetup_description_menu():
     inline_keyboard = [
         [InlineKeyboardButton('Посмотреть программу мероприятия', callback_data='description')],
-        [InlineKeyboardButton('Задать вопрос {speaker}', callback_data='question')],
+        [InlineKeyboardButton('Задать вопрос спикеру', callback_data='question')],
         [InlineKeyboardButton('В меню', callback_data='main_menu')]
     ]
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
@@ -113,6 +113,26 @@ def get_communication_menu(chat_id):
         inline_keyboard.append([InlineKeyboardButton('Пообщаться', callback_data='communicate')])
     inline_keyboard.append([InlineKeyboardButton('В меню', callback_data='main_menu')])
 
+    inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
+
+    return inline_kb_markup
+
+
+def get_stage_speakers(stage_id):
+    stage = MeetupProgram.objects.last().stages.get(id=stage_id)
+    blocks = stage.blocks.all()
+    speakers_chat_id = []
+    for block in blocks:
+        events = block.events.all()
+        event_speakers = [event.speaker.participant.chat_id for event in events]
+        speakers_chat_id.extend(event_speakers)
+
+    inline_keyboard = [
+        [InlineKeyboardButton(Meetuper.objects.get(chat_id=speaker_id).firstname, callback_data=speaker_id)]
+        for speaker_id in speakers_chat_id
+    ]
+
+    inline_keyboard.append([InlineKeyboardButton('Назад', callback_data='back')])
     inline_kb_markup = InlineKeyboardMarkup(inline_keyboard)
 
     return inline_kb_markup

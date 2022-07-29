@@ -23,6 +23,7 @@ from ._keyboard import (
     get_back_menu,
     get_meetup_description_menu,
     get_communication_menu,
+    get_stage_speakers,
 )
 
 from meetup.models import (
@@ -292,6 +293,19 @@ def meetup_description_menu_handler(context, update):
 
         return 'MAIN_MENU'
 
+    elif query.data == 'question':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Выберите стейдж с интересующим Вас спикером',
+            reply_markup=get_meetup_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'SPEAKERS'
+
 
 def stage_handler(context, update):
     query = update.callback_query
@@ -431,6 +445,32 @@ def get_questions(context, update):
     return 'QUESTIONS'
 
 
+def speakers_handler(context, update):
+    query = update.callback_query
+    if query.data.isdigit():
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Список спикеров в блоке {Block.objects.get(id=query.data).title}',
+            reply_markup=get_stage_speakers(query.data)
+        )
+        return 'ASK_SPEAKER'
+
+    elif query.data == 'back':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Можете ознокомиться с программой митапа <b><i>"{meetup.title}"</i></b>.'
+                 f' или задать вопрос любому спикеру',
+            parse_mode='HTML',
+            reply_markup=get_meetup_description_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+            )
+
+        return 'MEETUP_DESCRIPTION_MENU'
+
+
 def start_without_shipping(context, update):
     query = update.callback_query
 
@@ -538,6 +578,7 @@ def handle_users_reply(update, context):
         'STAGE': stage_handler,
         'BLOCK': block_handler,
         'QUESTIONS': get_questions,
+        'SPEAKERS': speakers_handler,
     }
     print(user_state)
     state_handler = states_functions[user_state]
