@@ -124,6 +124,7 @@ class BlockAdmin(admin.ModelAdmin):
         'start_time',
         'end_time'
     ]
+    search_fields = ['title']
     inlines = [
         EventInline,
     ]

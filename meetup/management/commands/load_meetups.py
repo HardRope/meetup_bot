@@ -26,7 +26,7 @@ class Command(BaseCommand):
             )
             for serialized_stage in serialized_meetup['stages']:
                 stage, _ = Stage.objects.get_or_create(
-                    title=serialized_stage['title'],
+                    title=f'{serialized_stage["title"]}. {meetup.title}',
                     defaults={
                         'program': meetup,
                         'start_time': serialized_stage['start_time'],
@@ -35,7 +35,7 @@ class Command(BaseCommand):
                 )
                 for serialized_block in serialized_stage['blocks']:
                     block, _ = Block.objects.get_or_create(
-                        title=serialized_block['title'],
+                        title=f'{serialized_block["title"]}. {serialized_stage["title"]}',
                         defaults={
                             'stage': stage,
                             'start_time': serialized_block['start_time'],
@@ -44,7 +44,7 @@ class Command(BaseCommand):
                     )
                     for serialized_event in serialized_block['events']:
                         event, _ = Event.objects.get_or_create(
-                            title=serialized_event['title'],
+                            title=f'{serialized_event["title"]}. {serialized_stage["title"]}',
                             defaults={
                                 'block': block,
                                 'start_time': serialized_event['start_time'],
