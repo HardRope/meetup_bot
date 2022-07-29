@@ -257,20 +257,39 @@ def communication_menu_handler(context, update):
         meetupers_id = [
             meetuper.chat_id for meetuper in Meetuper.objects.filter(is_open_for_communication=True)
         ]
-        communicate_id = random.choice(meetupers_id)
-        meetuper = Meetuper.objects.get(chat_id=communicate_id)
 
-        contact = Contact(
-            phone_number='+375291234567',
-            first_name=meetuper.firstname,
-            user_id=communicate_id,
-        )
+        if len(meetupers_id) >= 2:
+            communicate_id = random.choice(meetupers_id)
+            meetuper = Meetuper.objects.get(chat_id=communicate_id)
 
-        context.bot.send_contact(
-            chat_id=query.message.chat_id,
-            contact=contact,
-            reply_markup=get_contact_menu(communicate_id)
-        )
+            message_text = f'''Вы можете пообщаться с 
+<b><i>{meetuper.firstname} {meetuper.lastname}</i></b>.
+            
+{meetuper.firstname} трудится в {meetuper.organization} на должности {meetuper.position}
+            
+Или можете зайти сюда попозже, может быть кто-то еще будет готов пообщаться.
+            '''
+
+            context.bot.send_message(
+                chat_id=query.message.chat_id,
+                text=dedent(message_text),
+                parse_mode='HTML',
+                reply_markup=get_contact_menu(communicate_id)
+            )
+
+        else:
+            message_text = '''
+Нет других участников митапа, которые могут с Вами пообщаться.
+            
+Заходите позже.
+            '''
+
+            context.bot.send_message(
+                chat_id=query.message.chat_id,
+                text=dedent(message_text),
+                parse_mode='HTML',
+                reply_markup=get_contact_menu()
+            )
 
         context.bot.delete_message(
             chat_id=query.message.chat_id,
@@ -295,13 +314,6 @@ def chat_handler(context, update):
         )
 
         return 'MAIN_MENU'
-    # else:
-    #     chat_id = int(query.data.split(' ')[-1])
-    #     context.bot.send_message(
-    #         chat_id=chat_id,
-    #         text=f'Вас приветствует митап!',
-    #     )
-    #     return 'CHAT'
 
 
 def form_menu_handler(context, update):
