@@ -205,6 +205,20 @@ def main_menu_handler(context, update):
 
         return 'DONATE'
 
+    elif query.data == 'questions':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text='Вопросы от участников митапа',
+            reply_markup=get_questions(context, update)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        # return get_questions(context, update)
+        return 'QUESTIONS'
+
 
 def communication_menu_handler(context, update):
     query = update.callback_query
@@ -377,6 +391,46 @@ def block_handler(context, update):
         return 'STAGE'
 
 
+def get_questions(context, update):
+    query = update.callback_query
+
+    if query.data == 'back':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu(query.message.chat_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
+
+    speaker = Meetuper.objects.get(chat_id=query.message.chat_id).speaker
+
+    questions_query = speaker.received_questions.all()
+    questions_print = ''
+
+    for question in questions_query:
+        questions_print += f'''
+Вопрос от {question.meetuper.firstname} {question.meetuper.lastname}:
+{question.text}
+        '''
+
+    context.bot.send_message(
+        chat_id=query.message.chat_id,
+        text=questions_print,
+        reply_markup=get_back_menu()
+    )
+    context.bot.delete_message(
+        chat_id=query.message.chat_id,
+        message_id=query.message.message_id
+    )
+
+    return 'QUESTIONS'
+
+
 def start_without_shipping(context, update):
     query = update.callback_query
 
@@ -483,6 +537,7 @@ def handle_users_reply(update, context):
         'DONATE': start_without_shipping,
         'STAGE': stage_handler,
         'BLOCK': block_handler,
+        'QUESTIONS': get_questions,
     }
     print(user_state)
     state_handler = states_functions[user_state]
