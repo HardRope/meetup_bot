@@ -3,11 +3,11 @@
 {% block object-tools %}
     <table>
         <tr>
-            <form action="../../notify/" method="POST">
+            <form action="notify/" method="POST">
                 {% csrf_token %}
                     <button type="submit">Сделать объявление</button>
             </form>
-            <form action="../../program_changed/" method="POST">
+            <form action="program_changed/" method="POST">
                 {% csrf_token %}
                     <button type="submit">Отправить оповещение об изменениях в программе</button>
             </form>

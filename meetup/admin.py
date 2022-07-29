@@ -71,23 +71,26 @@ class MeetupProgramAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         my_urls = [
-            path('notify/', self.send_notifications),
-            path('program_changed/', self.send_program_notifications)
+            path('<int:pk>/change/notify/', self.send_notifications),
+            path(
+                '<int:pk>/change/program_changed/',
+                self.send_program_notifications
+            )
         ]
         return my_urls + urls
 
-    def send_notifications(self, request):
+    def send_notifications(self, request, pk):
         send_notification()
-        self.message_user(request, 'Оповещения отправлены')
-        return redirect('../')
+        self.message_user(request, 'Объявление отправлено')
+        return redirect(f'../../../{pk}/change/')
 
-    def send_program_notifications(self, request):
+    def send_program_notifications(self, request, pk):
         notify_program_change()
         self.message_user(
             request,
             'Оповещения об изменениях в программе отправлены'
         )
-        return redirect('../')
+        return redirect(f'../../../{pk}/change/')
 
 
 class BlockInline(admin.TabularInline):
