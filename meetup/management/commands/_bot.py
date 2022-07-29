@@ -211,18 +211,21 @@ def main_menu_handler(context, update):
         return 'DONATE'
 
     elif query.data == 'questions':
+        message_text = f'''
+Вопросы от участников митапа:
+{get_questions(query.message.chat_id)}
+'''
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text='Вопросы от участников митапа',
-            reply_markup=get_questions(context, update)
+            text=message_text,
+            reply_markup=get_back_menu()
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id
         )
 
-        # return get_questions(context, update)
-        return 'QUESTIONS'
+        return 'DONATE'
 
 
 def communication_menu_handler(context, update):
@@ -554,44 +557,19 @@ def block_handler(context, update):
         return 'STAGE'
 
 
-def get_questions(context, update):
-    query = update.callback_query
-
-    if query.data == 'back':
-        context.bot.send_message(
-            chat_id=query.message.chat_id,
-            text=f'Рады видеть Вас на митапе',
-            reply_markup=get_main_menu(query.message.chat_id)
-        )
-        context.bot.delete_message(
-            chat_id=query.message.chat_id,
-            message_id=query.message.message_id
-        )
-
-        return 'MAIN_MENU'
-
-    speaker = Meetuper.objects.get(chat_id=query.message.chat_id).speaker
+def get_questions(tg_id):
+    speaker = Meetuper.objects.get(chat_id=tg_id).speaker
 
     questions_query = speaker.received_questions.all()
     questions_print = ''
 
     for question in questions_query:
         questions_print += f'''
-        Вопрос от {question.meetuper.firstname} {question.meetuper.lastname}:
-        {question.text}
-        '''
+Вопрос от {question.meetuper.firstname} {question.meetuper.lastname}:
+{question.text}
+'''
 
-    context.bot.send_message(
-        chat_id=query.message.chat_id,
-        text=dedent(questions_print),
-        reply_markup=get_back_menu()
-    )
-    context.bot.delete_message(
-        chat_id=query.message.chat_id,
-        message_id=query.message.message_id
-    )
-
-    return 'QUESTIONS'
+    return questions_print
 
 
 def speakers_handler(context, update):
