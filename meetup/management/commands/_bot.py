@@ -24,6 +24,8 @@ from ._keyboard import (
     get_meetup_description_menu,
     get_communication_menu,
     get_stage_speakers,
+    get_form_menu,
+    get_submit_form_menu,
 )
 
 from meetup.models import (
@@ -241,14 +243,14 @@ def communication_menu_handler(context, update):
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Заполните анкету о себе',
-            # reply_markup=get_main_menu(query.message.chat_id)
+            reply_markup=get_submit_form_menu()
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id
         )
 
-        return 'NEXT'
+        return 'FORM_MENU'
 
     elif query.data == 'communicate':
         context.bot.send_message(
@@ -262,6 +264,51 @@ def communication_menu_handler(context, update):
         )
 
         return 'NEXT'
+
+
+def form_menu_handler(context, update):
+    query = update.callback_query
+
+    if query.data == 'main_menu':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu(query.message.chat_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
+
+    elif query.data == 'first_name':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Введите Ваше имя',
+            reply_markup=get_submit_form_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+        return 'FORM'
+
+
+def meetuper_form_handler(context, update):
+    query = update.callback_query
+
+    if query.data == 'first_name':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Введите Ваше имя',
+            reply_markup=get_submit_form_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+        return 'FORM'
 
 
 def meetup_description_menu_handler(context, update):
@@ -317,9 +364,13 @@ def stage_handler(context, update):
             json.dumps({'stage': query.data})
         )
 
+        message_text = f'''
+        Cписок докладов потока "{Stage.objects.get(id=query.data).title}"
+        '''
+
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'{Stage.objects.get(id=query.data).title}',
+            text=dedent(message_text),
             reply_markup=get_stage_menu(query.data)
         )
         context.bot.delete_message(
@@ -405,9 +456,15 @@ def block_handler(context, update):
         user = f'user_tg_{query.message.chat_id}'
         stage_id = json.loads(_database.get(user))['stage']
 
+        message_text = f'''
+        
+        Cписок докладов потока "{Stage.objects.get(id=stage_id).title}"             
+        
+        '''
+
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'{Stage.objects.get(id=stage_id).title}',
+            text=dedent(message_text),
             reply_markup=get_stage_menu(stage_id)
         )
         context.bot.delete_message(
@@ -441,13 +498,13 @@ def get_questions(context, update):
 
     for question in questions_query:
         questions_print += f'''
-Вопрос от {question.meetuper.firstname} {question.meetuper.lastname}:
-{question.text}
+        Вопрос от {question.meetuper.firstname} {question.meetuper.lastname}:
+        {question.text}
         '''
 
     context.bot.send_message(
         chat_id=query.message.chat_id,
-        text=questions_print,
+        text=dedent(questions_print),
         reply_markup=get_back_menu()
     )
     context.bot.delete_message(
@@ -592,6 +649,8 @@ def handle_users_reply(update, context):
         'BLOCK': block_handler,
         'QUESTIONS': get_questions,
         'SPEAKERS': speakers_handler,
+        'FORM_MENU': form_menu_handler,
+        'FORM': meetuper_form_handler,
     }
     print(user_state)
     state_handler = states_functions[user_state]
@@ -626,7 +685,6 @@ def main():
     dispatcher.add_handler(CallbackQueryHandler(handle_users_reply))
     dispatcher.add_handler(MessageHandler(Filters.text, handle_users_reply))
     dispatcher.add_handler(CommandHandler('start', handle_users_reply))
-    dispatcher.add_handler(CommandHandler('pay', start_without_shipping))
     dispatcher.add_handler(PreCheckoutQueryHandler(precheckout_callback))
     dispatcher.add_handler(MessageHandler(Filters.successful_payment, successful_payment_callback))
 
