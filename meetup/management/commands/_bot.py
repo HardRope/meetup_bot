@@ -578,12 +578,16 @@ def speakers_handler(context, update):
             text=f'Список спикеров в блоке {Block.objects.get(id=query.data).title}',
             reply_markup=get_stage_speakers(query.data)
         )
-        return 'ASK_SPEAKER'
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+            )
+        return 'SPEAKERS'
 
     elif query.data == 'back':
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Можете ознокомиться с программой митапа <b><i>"{meetup.title}"</i></b>.'
+            text=f'Можете ознакомиться с программой митапа <b><i>"{MeetupProgram.objects.last().title}"</i></b>.'
                  f' или задать вопрос любому спикеру',
             parse_mode='HTML',
             reply_markup=get_meetup_description_menu()
@@ -593,6 +597,28 @@ def speakers_handler(context, update):
             message_id=query.message.message_id
             )
 
+        return 'MEETUP_DESCRIPTION_MENU'
+
+
+def question_handler(context, update):
+    query = update.callback_query
+    if query.data.isdigit():
+        speaker_id = query.data
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'{speaker_id}',
+            # reply_markup=get_back_menu()
+        )
+        return 'ASK_QUESTION'
+
+    elif query.data == 'back':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Можете ознакомиться с программой митапа <b><i>"{MeetupProgram.objects.last().title}"</i></b>.'
+                 f' или задать вопрос любому спикеру',
+            parse_mode='HTML',
+            reply_markup=get_meetup_description_menu()
+        )
         return 'MEETUP_DESCRIPTION_MENU'
 
 
@@ -703,6 +729,7 @@ def handle_users_reply(update, context):
         'STAGE': stage_handler,
         'BLOCK': block_handler,
         'QUESTIONS': get_questions,
+        'ASK_QUESTION': question_handler,
         'SPEAKERS': speakers_handler,
         'CHAT': chat_handler,
         'FIRSTNAME': firstname_handler,

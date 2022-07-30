@@ -125,8 +125,9 @@ def get_stage_speakers(stage_id):
     speakers_chat_id = []
     for block in blocks:
         events = block.events.all()
-        event_speakers = [event.speaker.participant.chat_id for event in events]
-        speakers_chat_id.extend(event_speakers)
+        for event in events:
+            if event.speaker:
+                speakers_chat_id.append(event.speaker.participant.chat_id)
 
     inline_keyboard = [
         [InlineKeyboardButton(Meetuper.objects.get(chat_id=speaker_id).firstname, callback_data=speaker_id)]
