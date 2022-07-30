@@ -93,10 +93,16 @@ def start(context, update):
         А можете и не отправлять мы все равно вам рады.)))
         '''
 
-    update.message.reply_text(
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
         text=dedent(message_text),
         parse_mode='HTML',
         reply_markup=get_subscribtion_menu()
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id
     )
 
     return 'CONFIRM_MENU'
@@ -246,6 +252,10 @@ def communication_menu_handler(context, update):
             chat_id=query.message.chat_id,
             text=f'Введите ваше имя',
         )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
 
         return 'FIRSTNAME'
 
@@ -323,6 +333,16 @@ def firstname_handler(context, update):
         text=f'Введите вашу фамилию',
     )
 
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id - 1
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id
+    )
+
     return 'LASTNAME'
 
 
@@ -333,6 +353,16 @@ def lastname_handler(context, update):
     context.bot.send_message(
         chat_id=update.message.chat_id,
         text=f'Укажите место работы',
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id - 1
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id
     )
 
     return 'ORGANIZATION'
@@ -347,6 +377,16 @@ def organization_handler(context, update):
         text=f'Укажите вашу должность',
     )
 
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id - 1
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id
+    )
+
     return 'POSITION'
 
 
@@ -359,6 +399,16 @@ def position_handler(context, update):
         text=f'Введите ваш номер телефона',
     )
 
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id - 1
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id
+    )
+
     return 'PHONENUMBER'
 
 
@@ -369,6 +419,16 @@ def phonenumber_handler(context, update):
     context.bot.send_message(
         chat_id=update.message.chat_id,
         text=f'Введите ваш email',
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id - 1
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id
     )
 
     return 'EMAIL'
@@ -387,6 +447,16 @@ def email_handler(context, update):
         chat_id=update.message.chat_id,
         text=dedent(message_text),
         reply_markup=get_communication_menu(update.message.chat_id)
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id - 1
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id
     )
 
     return 'COMMUNICATION_MENU'
