@@ -531,6 +531,18 @@ def speakers_block_handler(context, update):
 
         return 'SPEAKERS'
 
+    elif query.data == 'main_menu':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu(query.message.chat_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
 
 def stage_handler(context, update):
     query = update.callback_query
