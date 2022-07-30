@@ -4,7 +4,8 @@ from meetup.models import (
     Meetuper,
     MeetupProgram,
     Stage,
-    Speaker
+    Speaker,
+    Block
 )
 
 
@@ -119,15 +120,14 @@ def get_communication_menu(chat_id):
     return inline_kb_markup
 
 
-def get_stage_speakers(stage_id):
-    stage = Stage.objects.get(id=stage_id)
-    blocks = stage.blocks.all()
+def get_stage_speakers(block_id):
+    block = Block.objects.get(id=block_id)
     speakers_chat_id = []
-    for block in blocks:
-        events = block.events.all()
-        for event in events:
-            if event.speaker:
-                speakers_chat_id.append(event.speaker.participant.chat_id)
+
+    events = block.events.all()
+    for event in events:
+        if event.speaker:
+            speakers_chat_id.append(event.speaker.participant.chat_id)
 
     inline_keyboard = [
         [InlineKeyboardButton(Meetuper.objects.get(chat_id=speaker_id).firstname, callback_data=speaker_id)]

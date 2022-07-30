@@ -502,6 +502,33 @@ def meetup_description_menu_handler(context, update):
             message_id=query.message.message_id
         )
 
+        return 'SPEAKERS_BLOCK'
+
+
+def speakers_block_handler(context, update):
+    query = update.callback_query
+
+    if query.data.isdigit():
+        user = f"user_tg_{query.message.chat_id}"
+        _database.set(
+            user,
+            json.dumps({'stage': query.data})
+        )
+
+        message_text = f'''
+        Cписок докладов потока "{Stage.objects.get(id=query.data).title}"
+        '''
+
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=dedent(message_text),
+            reply_markup=get_stage_menu(query.data)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
         return 'SPEAKERS'
 
 
@@ -800,6 +827,7 @@ def handle_users_reply(update, context):
         'BLOCK': block_handler,
         'QUESTIONS': get_questions,
         'ASK_QUESTION': question_handler,
+        'SPEAKERS_BLOCK': speakers_block_handler,
         'SPEAKERS': speakers_handler,
         'CHAT': chat_handler,
         'FIRSTNAME': firstname_handler,
