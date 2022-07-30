@@ -544,6 +544,7 @@ def speakers_block_handler(context, update):
 
         return 'MAIN_MENU'
 
+
 def stage_handler(context, update):
     query = update.callback_query
 
