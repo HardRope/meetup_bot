@@ -18,6 +18,7 @@ from .utils import notify_program_change, send_notification
 
 class QuestionInline(admin.TabularInline):
     model = Question
+    extra = 1
 
 
 @admin.register(Meetuper)
@@ -33,9 +34,24 @@ class MeetuperAdmin(admin.ModelAdmin):
         'is_open_for_communication',
         'is_active',
     ]
+    list_filter = [
+        'organization',
+        'position',
+        'is_open_for_communication',
+        'is_active',
+    ]
+    list_editable = [
+        'is_open_for_communication',
+        'is_active',
+    ]
+    search_fields = [
+        'firstname',
+        'lastname',
+    ]
     inlines = [
         QuestionInline,
     ]
+    save_on_top = True
 
 
 @admin.register(Speaker)
@@ -45,6 +61,9 @@ class SpeakerAdmin(admin.ModelAdmin):
         'participant',
         'is_active',
     ]
+    list_editable = [
+        'is_active',
+    ]
     inlines = [
         QuestionInline,
     ]
@@ -52,6 +71,7 @@ class SpeakerAdmin(admin.ModelAdmin):
 
 class StageInline(admin.TabularInline):
     model = Stage
+    extra = 1
 
 
 @admin.register(MeetupProgram)
@@ -63,9 +83,14 @@ class MeetupProgramAdmin(admin.ModelAdmin):
         'start_time',
         'end_time'
     ]
+    search_fields = [
+        'title',
+    ]
     inlines = [
         StageInline,
     ]
+    save_on_top = True
+    save_as = True
     change_form_template = 'meetups_change_form.html'
 
     def get_urls(self):
@@ -95,6 +120,7 @@ class MeetupProgramAdmin(admin.ModelAdmin):
 
 class BlockInline(admin.TabularInline):
     model = Block
+    extra = 1
 
 
 @admin.register(Stage)
@@ -106,13 +132,19 @@ class StageAdmin(admin.ModelAdmin):
         'start_time',
         'end_time'
     ]
+    search_fields = [
+        'title',
+    ]
     inlines = [
         BlockInline,
     ]
+    save_as = True
+    save_on_top = True
 
 
 class EventInline(admin.TabularInline):
     model = Event
+    extra = 1
 
 
 @admin.register(Block)
@@ -128,6 +160,8 @@ class BlockAdmin(admin.ModelAdmin):
     inlines = [
         EventInline,
     ]
+    save_as = True
+    save_on_top = True
 
 
 @admin.register(Event)
@@ -141,6 +175,10 @@ class EventAdmin(admin.ModelAdmin):
         'end_time',
         'is_active'
     ]
+    list_editable = [
+        'is_active',
+    ]
+    save_as = True
 
 
 @admin.register(Question)

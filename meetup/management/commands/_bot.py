@@ -25,9 +25,7 @@ from ._keyboard import (
     get_meetup_description_menu,
     get_communication_menu,
     get_stage_speakers,
-    get_form_menu,
     get_contact_menu,
-    # get_next_menu,
 )
 
 from meetup.models import (
