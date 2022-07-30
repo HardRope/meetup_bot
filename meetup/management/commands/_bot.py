@@ -24,7 +24,7 @@ from ._keyboard import (
     get_back_menu,
     get_meetup_description_menu,
     get_communication_menu,
-    get_stage_speakers,
+    get_block_speakers,
     get_contact_menu,
 )
 
@@ -686,7 +686,7 @@ def speakers_handler(context, update):
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Список спикеров в блоке {Block.objects.get(id=query.data).title}',
-            reply_markup=get_stage_speakers(query.data)
+            reply_markup=get_block_speakers(query.data)
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,

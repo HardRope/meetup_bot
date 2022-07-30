@@ -120,7 +120,7 @@ def get_communication_menu(chat_id):
     return inline_kb_markup
 
 
-def get_stage_speakers(block_id):
+def get_block_speakers(block_id):
     block = Block.objects.get(id=block_id)
     speakers_chat_id = []
 
