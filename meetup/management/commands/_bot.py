@@ -39,7 +39,8 @@ from meetup.models import (
     Speaker,
     Block,
     Donation,
-    Topic
+    Topic,
+    Question
 )
 
 env = Env()
@@ -791,14 +792,14 @@ def speakers_handler(context, update):
     if query.data.isdigit():
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Список спикеров в блоке {Block.objects.get(id=query.data).title}',
+            text=f'Спикеры в блоке {Block.objects.get(id=query.data).title}',
             reply_markup=get_block_speakers(query.data)
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id
             )
-        return 'SPEAKERS'
+        return 'QUESTION'
 
     elif query.data == 'back':
         context.bot.send_message(
@@ -818,12 +819,58 @@ def speakers_handler(context, update):
 
 def question_handler(context, update):
     query = update.callback_query
+
+    user = f"user_tg_{query.message.chat_id}"
+    _database.set(
+        user,
+        json.dumps({'speaker': query.data})
+    )
+
+    context.bot.send_message(
+        chat_id=query.message.chat_id,
+        text='Введите Ваш вопрос',
+    )
+    context.bot.delete_message(
+        chat_id=query.message.chat_id,
+        message_id=query.message.message_id
+    )
+    return 'SAVE_QUESTION'
+
+
+def save_question_handler(context, update):
+    chat_id = update.message.chat.id
+
+    user = f'user_tg_{update.message.chat_id}'
+    speaker_id = json.loads(_database.get(user))['speaker']
+
+    speaker = Meetuper.objects.get(chat_id=speaker_id).speaker
+    meetuper = Meetuper.objects.get(chat_id=chat_id)
+    question_text = update.message.text
+
+
+    question = Question(
+        text=question_text,
+        speaker=speaker,
+        meetuper=meetuper
+    )
+    question.save()
+
+    context.bot.send_message(
+        chat_id=chat_id,
+        text=f'Ваш вопрос отправлен!',
+        parse_mode='HTML',
+        reply_markup=get_main_menu(chat_id)
+    )
+    return 'MAIN_MENU'
+
+
+def questions_handler(context, update):
+    query = update.callback_query
     if query.data.isdigit():
         speaker_id = query.data
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'{speaker_id}',
-            # reply_markup=get_back_menu()
         )
         return 'ASK_QUESTION'
 
@@ -945,7 +992,9 @@ def handle_users_reply(update, context):
         'STAGE': stage_handler,
         'BLOCK': block_handler,
         'QUESTIONS': get_questions,
-        'ASK_QUESTION': question_handler,
+        'ASK_QUESTION': questions_handler,
+        'QUESTION': question_handler,
+        'SAVE_QUESTION': save_question_handler,
         'SPEAKERS_BLOCK': speakers_block_handler,
         'SPEAKERS': speakers_handler,
         'CHAT': chat_handler,
