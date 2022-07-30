@@ -1,11 +1,13 @@
 import json
 import logging
+import os.path
 import random
 from textwrap import dedent
 
 import redis
+import requests
 from environs import Env
-from telegram import LabeledPrice, Contact
+from telegram import LabeledPrice
 from telegram.ext import (
     Filters,
     Updater,
@@ -14,6 +16,8 @@ from telegram.ext import (
     MessageHandler,
     PreCheckoutQueryHandler,
 )
+from django.conf import settings
+from django.core.files import File
 
 from ._keyboard import (
     get_subscribtion_menu,
@@ -34,7 +38,8 @@ from meetup.models import (
     Stage,
     Speaker,
     Block,
-    Donation
+    Donation,
+    Topic
 )
 
 env = Env()
@@ -213,6 +218,24 @@ def main_menu_handler(context, update):
 
         return 'DONATE'
 
+    elif query.data == 'signup':
+        message_text = '''
+Чтобы стать спикером на следующем митапе нам нужно получить от Вас немного очень важной для нас информации
+
+Для начала введите тему доклада с которой Вы хотите выступить
+        '''
+
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=dedent(message_text),
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'SIGNUP'
+
     elif query.data == 'questions':
         message_text = f'''
 Вопросы от участников митапа:
@@ -231,7 +254,90 @@ def main_menu_handler(context, update):
         return 'QUESTIONS'
 
 
+def signup_handler(context, update):
+    meetuper = Meetuper.objects.get(chat_id=update.message.chat_id)
+    meetuper.topics.create(
+        title=update.message.text,
+    )
+    Speaker.objects.get_or_create(
+        participant=meetuper,
+    )
+
+    message_text = '''
+Чтобы узнать о Вас побольше, а потом рассказать нашим участникам о крутом докладчике на нужно ваше резюме.
+
+Пришлите нам его в виде любого документа.
+    '''
+
+    context.bot.send_message(
+        chat_id=update.message.chat_id,
+        text=dedent(message_text),
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id - 1
+    )
+
+    context.bot.delete_message(
+        chat_id=update.message.chat_id,
+        message_id=update.message.message_id
+    )
+
+    return 'MAIN_MENU'
+
+
+def download_cv(url, filename):
+    if not os.path.exists(f'{settings.MEDIA_ROOT}'):
+        os.makedirs(f'{settings.MEDIA_ROOT}')
+
+    local_filename = f'{settings.MEDIA_ROOT}/' + filename
+
+    response = requests.get(url)
+    response.raise_for_status()
+
+    with open(local_filename, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+
+    return local_filename
+
+
+def cv_handler(update, context):
+    chat_id = update.message.chat_id
+
+    filename = f'CV-{chat_id}.' + update.message.document.file_name.split('.')[-1]
+    file_info = context.bot.get_file(update.message.document.file_id)
+
+    cv = download_cv(file_info.file_path, filename)
+
+    metuper = Meetuper.objects.get(chat_id=chat_id)
+    with open(cv, 'rb') as f:
+        metuper.cv.save(filename, File(f), False)
+    metuper.save()
+
+    context.bot.send_message(
+        chat_id=chat_id,
+        text=f'Как только организаторы одобрят Вас в качестве докладчика мы обязательно об этом сообщим',
+        reply_markup=get_main_menu(chat_id)
+    )
+
+    context.bot.delete_message(
+        chat_id=chat_id,
+        message_id=update.message.message_id - 1
+    )
+
+    context.bot.delete_message(
+        chat_id=chat_id,
+        message_id=update.message.message_id
+    )
+
+    return 'MAIN_MENU'
+
+
 def communication_menu_handler(context, update):
+
     query = update.callback_query
 
     if query.data == 'main_menu':
@@ -849,6 +955,7 @@ def handle_users_reply(update, context):
         'POSITION': position_handler,
         'PHONENUMBER': phonenumber_handler,
         'EMAIL': email_handler,
+        'SIGNUP': signup_handler,
     }
     print(user_state)
     state_handler = states_functions[user_state]
@@ -877,7 +984,7 @@ def get_database_connection():
 def main():
     tg_token = env.str('TELEGRAM_TOKEN')
 
-    updater = Updater(tg_token)
+    updater = Updater(tg_token, use_context=True)
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CallbackQueryHandler(handle_users_reply))
@@ -885,6 +992,7 @@ def main():
     dispatcher.add_handler(CommandHandler('start', handle_users_reply))
     dispatcher.add_handler(PreCheckoutQueryHandler(precheckout_callback))
     dispatcher.add_handler(MessageHandler(Filters.successful_payment, successful_payment_callback))
+    dispatcher.add_handler(MessageHandler(Filters.document, cv_handler))
 
     dispatcher.add_error_handler(error)
 

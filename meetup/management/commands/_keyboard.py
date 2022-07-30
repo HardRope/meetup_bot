@@ -35,6 +35,7 @@ def get_main_menu(chat_id):
     inline_keyboard = [
         [InlineKeyboardButton('Мероприятие', callback_data='meetup')],
         [InlineKeyboardButton('Общение', callback_data='communication')],
+        [InlineKeyboardButton('Стать спикером следующего митапа', callback_data='signup')],
         [InlineKeyboardButton('Донат', callback_data='donate')],
     ]
 

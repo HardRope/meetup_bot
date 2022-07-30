@@ -7,3 +7,4 @@ env
 # pycharm config files
 .idea
 *migrations
+*media
