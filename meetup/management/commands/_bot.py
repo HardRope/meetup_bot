@@ -580,12 +580,16 @@ def speakers_handler(context, update):
             text=f'Список спикеров в блоке {Block.objects.get(id=query.data).title}',
             reply_markup=get_stage_speakers(query.data)
         )
-        return 'ASK_SPEAKER'
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+            )
+        return 'SPEAKERS'
 
     elif query.data == 'back':
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Можете ознокомиться с программой митапа <b><i>"{meetup.title}"</i></b>.'
+            text=f'Можете ознакомиться с программой митапа <b><i>"{MeetupProgram.objects.last().title}"</i></b>.'
                  f' или задать вопрос любому спикеру',
             parse_mode='HTML',
             reply_markup=get_meetup_description_menu()
@@ -612,7 +616,7 @@ def question_handler(context, update):
     elif query.data == 'back':
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Можете ознокомиться с программой митапа <b><i>"{MeetupProgram.objects.last().title}"</i></b>.'
+            text=f'Можете ознакомиться с программой митапа <b><i>"{MeetupProgram.objects.last().title}"</i></b>.'
                  f' или задать вопрос любому спикеру',
             parse_mode='HTML',
             reply_markup=get_meetup_description_menu()
