@@ -11,7 +11,8 @@ from .models import (
     Event,
     Question,
     Donation,
-    Notification
+    Notification,
+    Topic,
 )
 from .utils import notify_program_change, send_notification
 
@@ -214,3 +215,7 @@ class NotificationAdmin(admin.ModelAdmin):
         'text',
         'created_at',
     ]
+
+@admin.register(Topic)
+class TopicAdmin(admin.ModelAdmin):
+    pass

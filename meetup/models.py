@@ -37,6 +37,10 @@ class Meetuper(models.Model):
         blank=True,
         default=''
     )
+    cv = models.FileField(
+        'Резюме',
+        blank=True,
+    )
     chat_id = models.PositiveIntegerField(
         verbose_name='чат-id участника в Telegram',
         primary_key=True
@@ -232,3 +236,31 @@ class Notification(models.Model):
     class Meta:
         verbose_name = 'Объявление'
         verbose_name_plural = 'Объявления'
+
+
+class Topic(models.Model):
+    title = models.CharField(
+        'Тема доклада',
+        max_length=255
+    )
+    meetuper = models.ForeignKey(
+        Meetuper,
+        on_delete=models.CASCADE,
+        related_name='topics'
+    )
+    created_at = models.DateTimeField(
+        'Время подачи темы на рассмотрение',
+        auto_now=True
+    )
+    is_allowed = models.BooleanField(
+        'Тема одобрена',
+        default=False,
+        db_index=True
+    )
+
+    def __str__(self):
+        return f'Тема "{self.title}" от {self.meetuper.firstname} {self.meetuper.lastname}'
+
+    class Meta:
+        verbose_name = 'Тема доклада на следующий митап'
+        verbose_name_plural = 'Темы докладов на следующий митап'
