@@ -120,7 +120,7 @@ def get_communication_menu(chat_id):
 
 
 def get_stage_speakers(stage_id):
-    stage = MeetupProgram.objects.last().stages.get(id=stage_id)
+    stage = Stage.objects.get(id=stage_id)
     blocks = stage.blocks.all()
     speakers_chat_id = []
     for block in blocks:
