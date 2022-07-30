@@ -847,6 +847,7 @@ def save_question_handler(context, update):
     meetuper = Meetuper.objects.get(chat_id=chat_id)
     question_text = update.message.text
 
+    send_notify_to_speaker(context, speaker_id)
 
     question = Question(
         text=question_text,
@@ -863,6 +864,16 @@ def save_question_handler(context, update):
     )
     return 'MAIN_MENU'
 
+
+def send_notify_to_speaker(context, speaker_id):
+    speaker = Meetuper.objects.get(chat_id=speaker_id).speaker
+    questions_query = speaker.received_questions.all()
+    if not questions_query:
+        context.bot.send_message(
+            chat_id=speaker_id,
+            text=f'Вам задали вопрос.',
+        )
+    return
 
 def questions_handler(context, update):
     query = update.callback_query
