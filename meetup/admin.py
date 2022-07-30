@@ -218,4 +218,12 @@ class NotificationAdmin(admin.ModelAdmin):
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
-    pass
+    list_display = [
+        'meetuper',
+        'title',
+        'created_at',
+        'is_allowed',
+    ]
+    list_editable = [
+        'is_allowed',
+    ]
