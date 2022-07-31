@@ -234,8 +234,8 @@ class DonationAdmin(admin.ModelAdmin):
     def chart_data(self):
         return (
             Donation.objects.annotate(donation_date=TruncDay('date'))
-                .values('date')
-                .annotate(y=Sum('amount'))
+            .values('date')
+            .annotate(y=Sum('amount'))
         )
 
 
@@ -246,6 +246,7 @@ class NotificationAdmin(admin.ModelAdmin):
         'text',
         'created_at',
     ]
+
 
 @admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
