@@ -5,7 +5,8 @@ from meetup.models import (
     MeetupProgram,
     Stage,
     Speaker,
-    Block
+    Block,
+    Topic,
 )
 
 
@@ -35,9 +36,14 @@ def get_main_menu(chat_id):
     inline_keyboard = [
         [InlineKeyboardButton('Мероприятие', callback_data='meetup')],
         [InlineKeyboardButton('Общение', callback_data='communication')],
-        [InlineKeyboardButton('Стать спикером следующего митапа', callback_data='signup')],
         [InlineKeyboardButton('Донат', callback_data='donate')],
     ]
+
+    if not Topic.objects.filter(meetuper__chat_id=chat_id):
+        inline_keyboard.append([InlineKeyboardButton('Стать спикером следующего митапа', callback_data='signup')])
+
+    if not Meetuper.objects.get(chat_id=chat_id).is_subcribed_next_meetup:
+        inline_keyboard.append([InlineKeyboardButton('Подписаться на следующий митап', callback_data='subscribe')])
 
     if check_question(chat_id):
         inline_keyboard.append([InlineKeyboardButton('Вопросы от пользователей', callback_data='questions')])
