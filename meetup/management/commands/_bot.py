@@ -896,6 +896,14 @@ def save_question_handler(context, update):
         parse_mode='HTML',
         reply_markup=get_main_menu(chat_id)
     )
+    context.bot.delete_message(
+        chat_id=chat_id,
+        message_id=update.message.message_id - 1
+    )
+    context.bot.delete_message(
+        chat_id=chat_id,
+        message_id=update.message.message_id
+    )
     return 'MAIN_MENU'
 
 
@@ -907,7 +915,9 @@ def send_notify_to_speaker(context, speaker_id):
             chat_id=speaker_id,
             text=f'Вам задали вопрос.',
         )
+
     return
+
 
 def questions_handler(context, update):
     query = update.callback_query
