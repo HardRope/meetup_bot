@@ -39,7 +39,6 @@ from meetup.models import (
     Speaker,
     Block,
     Donation,
-    Topic,
     Question
 )
 
@@ -991,15 +990,23 @@ def successful_payment_callback(update, context):
     return 'MAIN_MENU'
 
 
+def set_meetuper_is_active(chat_id):
+    meetuper = Meetuper.objects.get(chat_id=chat_id)
+    meetuper.is_active = True
+    meetuper.save()
+
+
 def handle_users_reply(update, context):
     db = get_database_connection()
 
     if update.message:
         user_reply = update.message.text
         chat_id = update.message.chat_id
+        set_meetuper_is_active(chat_id)
     elif update.callback_query:
         user_reply = update.callback_query.data
         chat_id = update.callback_query.message.chat_id
+        set_meetuper_is_active(chat_id)
     else:
         return
     if user_reply == '/start':
