@@ -221,6 +221,7 @@ class Donation(models.Model):
     class Meta:
         verbose_name = 'Донат'
         verbose_name_plural = 'Донаты'
+        ordering = ['-date']
 
 
 class Notification(models.Model):
@@ -236,6 +237,7 @@ class Notification(models.Model):
     class Meta:
         verbose_name = 'Объявление'
         verbose_name_plural = 'Объявления'
+        ordering = ['-created_at']
 
 
 class Topic(models.Model):
