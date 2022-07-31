@@ -631,46 +631,6 @@ def meetup_description_menu_handler(context, update):
         return 'SPEAKERS_BLOCK'
 
 
-def speakers_block_handler(context, update):
-    query = update.callback_query
-
-    if query.data.isdigit():
-        user = f"user_tg_{query.message.chat_id}"
-        _database.set(
-            user,
-            json.dumps({'stage': query.data})
-        )
-
-        message_text = f'''
-        Cписок докладов потока "{Stage.objects.get(id=query.data).title}"
-        '''
-
-        context.bot.send_message(
-            chat_id=query.message.chat_id,
-            text=dedent(message_text),
-            reply_markup=get_stage_menu(query.data)
-        )
-        context.bot.delete_message(
-            chat_id=query.message.chat_id,
-            message_id=query.message.message_id
-        )
-
-        return 'SPEAKERS'
-
-    elif query.data == 'main_menu':
-        context.bot.send_message(
-            chat_id=query.message.chat_id,
-            text=f'Рады видеть Вас на митапе',
-            reply_markup=get_main_menu(query.message.chat_id)
-        )
-        context.bot.delete_message(
-            chat_id=query.message.chat_id,
-            message_id=query.message.message_id
-        )
-
-        return 'MAIN_MENU'
-
-
 def stage_handler(context, update):
     query = update.callback_query
 
@@ -792,18 +752,44 @@ def block_handler(context, update):
         return 'STAGE'
 
 
-def get_questions(tg_id):
-    speaker = Meetuper.objects.get(chat_id=tg_id).speaker
-    questions_query = speaker.received_questions.all()
-    questions_print = ''
+def speakers_block_handler(context, update):
+    query = update.callback_query
 
-    for question in questions_query:
-        questions_print += f'''
-Вопрос от {question.meetuper.firstname} {question.meetuper.lastname}:
-{question.text}
-'''
+    if query.data.isdigit():
+        user = f"user_tg_{query.message.chat_id}"
+        _database.set(
+            user,
+            json.dumps({'stage': query.data})
+        )
 
-    return questions_print
+        message_text = f'''
+        Cписок докладов потока "{Stage.objects.get(id=query.data).title}"
+        '''
+
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=dedent(message_text),
+            reply_markup=get_stage_menu(query.data)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'SPEAKERS'
+
+    elif query.data == 'main_menu':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu(query.message.chat_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
 
 
 def speakers_handler(context, update):
@@ -819,23 +805,6 @@ def speakers_handler(context, update):
             message_id=query.message.message_id
             )
         return 'QUESTION'
-
-
-def question_list_handler(context, update):
-    query = update.callback_query
-
-    if query.data == 'back':
-        context.bot.send_message(
-            chat_id=query.message.chat_id,
-            text=f'Рады видеть Вас на митапе',
-            reply_markup=get_main_menu(query.message.chat_id)
-        )
-        context.bot.delete_message(
-            chat_id=query.message.chat_id,
-            message_id=query.message.message_id
-        )
-
-        return 'MAIN_MENU'
 
 
 def question_handler(context, update):
@@ -938,6 +907,37 @@ def questions_handler(context, update):
             reply_markup=get_meetup_description_menu()
         )
         return 'MEETUP_DESCRIPTION_MENU'
+
+
+def get_questions(tg_id):
+    speaker = Meetuper.objects.get(chat_id=tg_id).speaker
+    questions_query = speaker.received_questions.all()
+    questions_print = ''
+
+    for question in questions_query:
+        questions_print += f'''
+Вопрос от {question.meetuper.firstname} {question.meetuper.lastname}:
+{question.text}
+'''
+
+    return questions_print
+
+
+def question_list_handler(context, update):
+    query = update.callback_query
+
+    if query.data == 'back':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu(query.message.chat_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
 
 
 def start_without_shipping(context, update):
