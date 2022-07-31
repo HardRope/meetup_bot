@@ -1,6 +1,12 @@
+import json
+
 from django.contrib import admin
+from django.db.models.functions import TruncDay
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import path
+from django.db.models import Sum
+from django.core.serializers.json import DjangoJSONEncoder
 
 from .models import (
     Meetuper,
@@ -206,6 +212,31 @@ class DonationAdmin(admin.ModelAdmin):
         'date',
         'amount',
     ]
+
+    def changelist_view(self, request, extra_context=None):
+        chart_data = self.chart_data()
+        as_json = json.dumps(list(chart_data), cls=DjangoJSONEncoder)
+        extra_context = extra_context or {'chart_data': as_json}
+
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        extra_urls = [
+            path('chart_data/', self.admin_site.admin_view(self.chart_data_endpoint)),
+        ]
+        return extra_urls + urls
+
+    def chart_data_endpoint(self, request):
+        chart_data = self.chart_data()
+        return JsonResponse(list(chart_data), safe=False)
+
+    def chart_data(self):
+        return (
+            Donation.objects.annotate(donation_date=TruncDay('date'))
+                .values('date')
+                .annotate(y=Sum('amount'))
+        )
 
 
 @admin.register(Notification)
