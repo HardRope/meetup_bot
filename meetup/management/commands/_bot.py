@@ -236,6 +236,26 @@ def main_menu_handler(context, update):
 
         return 'SIGNUP'
 
+    elif query.data == 'subscribe':
+        message_text = '''
+Вы подписались на участие в следующем митапе.
+        '''
+        meetuper = Meetuper.objects.get(chat_id=query.message.chat_id)
+        meetuper.is_subcribed_next_meetup = True
+        meetuper.save()
+
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=dedent(message_text),
+            reply_markup=get_main_menu(query.message.chat_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
+
     elif query.data == 'questions':
         message_text = f'''
 Вопросы от участников митапа:

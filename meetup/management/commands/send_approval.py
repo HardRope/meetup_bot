@@ -6,7 +6,7 @@ from meetup.models import Topic
 
 
 class Command(BaseCommand):
-    help = 'Send mitup approval'
+    help = 'Send meetup approval'
 
     def handle(self, *args, **kwargs):
         env = Env()

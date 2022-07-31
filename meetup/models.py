@@ -53,6 +53,10 @@ class Meetuper(models.Model):
         'активный участник',
         default=True
     )
+    is_subcribed_next_meetup = models.BooleanField(
+        'подписан на следующий метап',
+        default=False
+    )
 
     def __str__(self):
         return f'{self.chat_id}: {self.firstname} {self.lastname}'
