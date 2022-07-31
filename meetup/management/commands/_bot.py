@@ -795,6 +795,12 @@ def speakers_block_handler(context, update):
 def speakers_handler(context, update):
     query = update.callback_query
     if query.data.isdigit():
+        user = f"user_tg_{query.message.chat_id}"
+        _database.set(
+            user,
+            json.dumps({'block': query.data})
+        )
+
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Спикеры в блоке {Block.objects.get(id=query.data).title}',
@@ -824,17 +830,20 @@ def question_handler(context, update):
     query = update.callback_query
 
     if query.data == 'back':
+        user = f'user_tg_{query.message.chat_id}'
+        block_id = json.loads(_database.get(user))['block']
+
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Рады видеть Вас на митапе',
-            reply_markup=get_main_menu(query.message.chat_id)
+            reply_markup=get_stage_menu(block_id)
         )
         context.bot.delete_message(
             chat_id=query.message.chat_id,
             message_id=query.message.message_id
         )
 
-        return 'MAIN_MENU'
+        return 'SPEAKERS'
     
     user = f"user_tg_{query.message.chat_id}"
     _database.set(
