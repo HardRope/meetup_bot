@@ -806,6 +806,19 @@ def speakers_handler(context, update):
             )
         return 'QUESTION'
 
+    elif query.data == 'back':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Программа митапа: \n',
+            reply_markup=get_meetup_menu()
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'SPEAKERS_BLOCK'
+
 
 def question_handler(context, update):
     query = update.callback_query
