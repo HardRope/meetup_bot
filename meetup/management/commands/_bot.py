@@ -817,6 +817,23 @@ def speakers_handler(context, update):
         return 'MEETUP_DESCRIPTION_MENU'
 
 
+def question_list_handler(context, update):
+    query = update.callback_query
+
+    if query.data == 'back':
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Рады видеть Вас на митапе',
+            reply_markup=get_main_menu(query.message.chat_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+
+        return 'MAIN_MENU'
+
+
 def question_handler(context, update):
     query = update.callback_query
 
@@ -1002,7 +1019,7 @@ def handle_users_reply(update, context):
         'DONATE': start_without_shipping,
         'STAGE': stage_handler,
         'BLOCK': block_handler,
-        'QUESTIONS': get_questions,
+        'QUESTIONS': question_list_handler,
         'ASK_QUESTION': questions_handler,
         'QUESTION': question_handler,
         'SAVE_QUESTION': save_question_handler,
