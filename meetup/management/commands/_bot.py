@@ -83,8 +83,8 @@ def start(context, update):
         <b>Рады видеть Вас в качестве спикера на нашем митапе!</b>
         
         
-        Подтвердите регистрацию на митап <b><i>"{meetup.title}"</i></b> отправив нам свой e-mail. Обещаем не спамить.))
-        А можете и не отправлять мы все равно вам рады.)))
+        Подтвердите регистрацию на митап <b><i>"{meetup.title}"</i></b>, отправив нам свой e-mail. Обещаем не спамить.))
+        А можете и не отправлять, мы все равно вам рады.)))
         '''
 
     else:
@@ -94,8 +94,8 @@ def start(context, update):
         Наш митап пройдет {meetup.date} с {meetup.start_time} до {meetup.end_time}.
         
         
-        Подтвердите регистрацию на митап <b><i>"{meetup.title}"</i></b> отправив нам свой e-mail. Обещаем не спамить.))
-        А можете и не отправлять мы все равно вам рады.)))
+        Подтвердите регистрацию на митап <b><i>"{meetup.title}"</i></b>, отправив нам свой e-mail. Обещаем не спамить.))
+        А можете и не отправлять, мы все равно вам рады.)))
         '''
 
     context.bot.send_message(
@@ -220,9 +220,9 @@ def main_menu_handler(context, update):
 
     elif query.data == 'signup':
         message_text = '''
-Чтобы стать спикером на следующем митапе нам нужно получить от Вас немного очень важной для нас информации
+Чтобы стать спикером на следующем митапе, нам нужно получить от Вас немного очень важной для нас информации.
 
-Для начала введите тему доклада с которой Вы хотите выступить
+Для начала введите тему доклада с которой Вы хотите выступить.
         '''
 
         context.bot.send_message(
@@ -289,16 +289,8 @@ def signup_handler(context, update):
         )
         return 'MAIN_MENU'
 
-    meetuper = Meetuper.objects.get(chat_id=update.message.chat_id)
-    meetuper.topics.create(
-        title=update.message.text,
-    )
-    Speaker.objects.get_or_create(
-        participant=meetuper,
-    )
-
     message_text = '''
-Чтобы узнать о Вас побольше, а потом рассказать нашим участникам о крутом докладчике на нужно ваше резюме.
+Чтобы узнать о Вас побольше, а потом рассказать нашим участникам о крутом докладчике, нам нужно Ваше резюме.
 
 Пришлите нам его в виде любого документа.
     '''
@@ -346,10 +338,16 @@ def cv_handler(update, context):
 
     cv = download_cv(file_info.file_path, filename)
 
-    metuper = Meetuper.objects.get(chat_id=chat_id)
+    meetuper = Meetuper.objects.get(chat_id=chat_id)
+    meetuper.topics.create(
+        title=update.message.text,
+    )
+    Speaker.objects.get_or_create(
+        participant=meetuper,
+    )
     with open(cv, 'rb') as f:
-        metuper.cv.save(filename, File(f), False)
-    metuper.save()
+        meetuper.cv.save(filename, File(f), False)
+    meetuper.save()
 
     context.bot.send_message(
         chat_id=chat_id,
