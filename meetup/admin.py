@@ -88,7 +88,11 @@ class MeetupProgramAdmin(admin.ModelAdmin):
         'title',
         'date',
         'start_time',
-        'end_time'
+        'end_time',
+        'current',
+    ]
+    list_editable = [
+        'current',
     ]
     search_fields = [
         'title',

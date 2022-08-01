@@ -77,7 +77,7 @@ def get_donate_menu():
 
 
 def get_meetup_menu():
-    meetup = MeetupProgram.objects.last()
+    meetup = MeetupProgram.objects.get(current=True)
 
     inline_keyboard = [
         [InlineKeyboardButton(stage.title, callback_data=stage.id)] for stage in meetup.stages.all()

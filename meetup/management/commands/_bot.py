@@ -64,7 +64,7 @@ def start(context, update):
     first_name = update.message.chat.first_name
     last_name = update.message.chat.last_name
 
-    meetup = MeetupProgram.objects.last()
+    meetup = MeetupProgram.objects.get(current=True)
 
     Meetuper.objects.get_or_create(
         chat_id=tg_id,
@@ -154,7 +154,7 @@ def wait_email_handler(context, update):
     meetuper.email = update.message.text
     meetuper.save()
 
-    meetup = MeetupProgram.objects.last()
+    meetup = MeetupProgram.objects.get(current=True)
 
     context.bot.send_message(
         chat_id=chat_id,
@@ -173,7 +173,7 @@ def wait_email_handler(context, update):
 def main_menu_handler(context, update):
     query = update.callback_query
     if query.data == 'meetup':
-        meetup = MeetupProgram.objects.last()
+        meetup = MeetupProgram.objects.get(current=True)
         context.bot.send_message(
             chat_id=query.message.chat_id,
             text=f'Можете ознокомиться с программой митапа <b><i>"{meetup.title}"</i></b>.'
@@ -965,7 +965,8 @@ def questions_handler(context, update):
     elif query.data == 'back':
         context.bot.send_message(
             chat_id=chat_id,
-            text=f'Можете ознакомиться с программой митапа <b><i>"{MeetupProgram.objects.last().title}"</i></b>.'
+            text=f'Можете ознакомиться с программой митапа '
+                 f'<b><i>"{MeetupProgram.objects.get(current=True).title}"</i></b>.'
                  f' или задать вопрос любому спикеру',
             parse_mode='HTML',
             reply_markup=get_meetup_description_menu()

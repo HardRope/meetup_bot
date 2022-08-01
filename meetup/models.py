@@ -90,6 +90,11 @@ class MeetupProgram(models.Model):
     start_time = models.TimeField('время начала мероприятия')
     end_time = models.TimeField('время завершения мероприятия')
 
+    current = models.BooleanField(
+        'Текущее мероприятие',
+        default=False
+    )
+
     def __str__(self):
         return f'{self.title}'
 
