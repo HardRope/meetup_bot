@@ -1071,7 +1071,7 @@ def successful_payment_callback(update, context):
 
 
 def set_meetuper_is_active(chat_id):
-    meetuper = Meetuper.objects.get(chat_id=chat_id)
+    meetuper, _ = Meetuper.objects.get_or_create(chat_id=chat_id)
     meetuper.is_active = True
     meetuper.save()
 

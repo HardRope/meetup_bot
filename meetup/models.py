@@ -40,6 +40,7 @@ class Meetuper(models.Model):
     cv = models.FileField(
         'Резюме',
         blank=True,
+        null=True
     )
     chat_id = models.PositiveIntegerField(
         verbose_name='чат-id участника в Telegram',
