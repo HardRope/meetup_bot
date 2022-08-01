@@ -176,7 +176,7 @@ def main_menu_handler(context, update):
         meetup = MeetupProgram.objects.get(current=True)
         context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=f'Можете ознокомиться с программой митапа <b><i>"{meetup.title}"</i></b>.'
+            text=f'Можете ознакомиться с программой митапа <b><i>"{meetup.title}"</i></b>.'
                  f' или задать вопрос любому спикеру',
             parse_mode='HTML',
             reply_markup=get_meetup_description_menu()
@@ -222,7 +222,7 @@ def main_menu_handler(context, update):
         message_text = '''
 Чтобы стать спикером на следующем митапе, нам нужно получить от Вас немного очень важной для нас информации.
 
-Для начала введите тему доклада с которой Вы хотите выступить.
+Для начала введите тему доклада, с которой Вы хотите выступить.
         '''
 
         context.bot.send_message(

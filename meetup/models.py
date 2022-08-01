@@ -54,7 +54,7 @@ class Meetuper(models.Model):
         default=True
     )
     is_subcribed_next_meetup = models.BooleanField(
-        'подписан на следующий метап',
+        'подписан на следующий митап',
         default=False
     )
 
