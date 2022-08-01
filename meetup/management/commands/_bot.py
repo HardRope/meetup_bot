@@ -828,10 +828,11 @@ def speakers_handler(context, update):
 
 def question_handler(context, update):
     query = update.callback_query
+    user = f'user_tg_{query.message.chat_id}'
+    block_id = json.loads(_database.get(user))['block']
 
     if query.data == 'back':
-        user = f'user_tg_{query.message.chat_id}'
-        block_id = json.loads(_database.get(user))['block']
+
 
         context.bot.send_message(
             chat_id=query.message.chat_id,
@@ -845,15 +846,20 @@ def question_handler(context, update):
 
         return 'SPEAKERS'
     
-    user = f"user_tg_{query.message.chat_id}"
+    # user = f"user_tg_{query.message.chat_id}"
     _database.set(
         user,
         json.dumps({'speaker': query.data})
     )
+    _database.set(
+            user,
+            json.dumps({'block': block_id})
+        )
 
     context.bot.send_message(
         chat_id=query.message.chat_id,
         text='Введите Ваш вопрос',
+        reply_markup=get_back_menu()
     )
     context.bot.delete_message(
         chat_id=query.message.chat_id,
@@ -863,6 +869,23 @@ def question_handler(context, update):
 
 
 def save_question_handler(context, update):
+    query = update.callback_query
+
+    if query.data == 'back':
+        user = f'user_tg_{query.message.chat_id}'
+        block_id = json.loads(_database.get(user))['block']
+
+        context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=f'Спикеры в блоке {Block.objects.get(id=block_id).title}',
+            reply_markup=get_block_speakers(block_id)
+        )
+        context.bot.delete_message(
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id
+        )
+        return 'QUESTION'
+
     chat_id = update.message.chat.id
 
     user = f'user_tg_{update.message.chat_id}'
