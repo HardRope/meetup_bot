@@ -293,7 +293,17 @@ def signup_handler(context, update):
 Чтобы узнать о Вас побольше, а потом рассказать нашим участникам о крутом докладчике, нам нужно Ваше резюме.
 
 Пришлите нам его в виде любого документа.
+
+Если Вы не можете сейчас отправить нам резюме - просто пришлите его в чат позже, и мы обязательно его увидим.
     '''
+
+    meetuper = Meetuper.objects.get(chat_id=update.message.chat_id)
+    meetuper.topics.create(
+        title=update.message.text,
+    )
+    Speaker.objects.get_or_create(
+        participant=meetuper,
+    )
 
     context.bot.send_message(
         chat_id=update.message.chat_id,
@@ -340,12 +350,7 @@ def cv_handler(update, context):
     cv = download_cv(file_info.file_path, filename)
 
     meetuper = Meetuper.objects.get(chat_id=chat_id)
-    meetuper.topics.create(
-        title=update.message.text,
-    )
-    Speaker.objects.get_or_create(
-        participant=meetuper,
-    )
+
     with open(cv, 'rb') as f:
         meetuper.cv.save(filename, File(f), False)
     meetuper.save()
