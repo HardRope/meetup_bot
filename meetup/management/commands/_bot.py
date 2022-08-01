@@ -878,7 +878,6 @@ def question_handler(context, update):
     context.bot.send_message(
         chat_id=chat_id,
         text='Введите Ваш вопрос',
-        reply_markup=get_back_menu()
     )
     context.bot.delete_message(
         chat_id=chat_id,
@@ -890,21 +889,6 @@ def question_handler(context, update):
 def save_question_handler(context, update):
     query = update.callback_query
     chat_id = update.message.chat_id
-
-    if query and query.data == 'back':
-        user = f'user_tg_{chat_id}'
-        block_id = json.loads(_database.get(user))['block']
-
-        context.bot.send_message(
-            chat_id=chat_id,
-            text=f'Спикеры в блоке {Block.objects.get(id=block_id).title}',
-            reply_markup=get_block_speakers(block_id)
-        )
-        context.bot.delete_message(
-            chat_id=chat_id,
-            message_id=query.message.message_id
-        )
-        return 'QUESTION'
 
     user = f'user_tg_{chat_id}'
     speaker_id = json.loads(_database.get(user))['speaker']
