@@ -298,6 +298,7 @@ def signup_handler(context, update):
     context.bot.send_message(
         chat_id=update.message.chat_id,
         text=dedent(message_text),
+        reply_markup=get_back_menu()
     )
 
     context.bot.delete_message(
@@ -310,7 +311,7 @@ def signup_handler(context, update):
         message_id=update.message.message_id
     )
 
-    return 'MAIN_MENU'
+    return 'SIGNUP'
 
 
 def download_cv(url, filename):
