@@ -754,9 +754,10 @@ def block_handler(context, update):
 
 def speakers_block_handler(context, update):
     query = update.callback_query
+    chat_id = query.message.chat_id
 
     if query.data.isdigit():
-        user = f"user_tg_{query.message.chat_id}"
+        user = f"user_tg_{chat_id}"
         _database.set(
             user,
             json.dumps({'stage': query.data})
@@ -767,12 +768,12 @@ def speakers_block_handler(context, update):
         '''
 
         context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             text=dedent(message_text),
             reply_markup=get_stage_menu(query.data)
         )
         context.bot.delete_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             message_id=query.message.message_id
         )
 
@@ -780,12 +781,12 @@ def speakers_block_handler(context, update):
 
     elif query.data == 'main_menu':
         context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             text=f'Рады видеть Вас на митапе',
-            reply_markup=get_main_menu(query.message.chat_id)
+            reply_markup=get_main_menu(chat_id)
         )
         context.bot.delete_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             message_id=query.message.message_id
         )
 
@@ -794,32 +795,34 @@ def speakers_block_handler(context, update):
 
 def speakers_handler(context, update):
     query = update.callback_query
+    chat_id = query.message.chat_id
+
     if query.data.isdigit():
-        user = f"user_tg_{query.message.chat_id}"
+        user = f"user_tg_{chat_id}"
         _database.set(
             user,
             json.dumps({'block': query.data})
         )
 
         context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             text=f'Спикеры в блоке {Block.objects.get(id=query.data).title}',
             reply_markup=get_block_speakers(query.data)
         )
         context.bot.delete_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             message_id=query.message.message_id
             )
         return 'QUESTION'
 
     elif query.data == 'back':
         context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             text=f'Программа митапа: \n',
             reply_markup=get_meetup_menu()
         )
         context.bot.delete_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             message_id=query.message.message_id
         )
 
@@ -828,41 +831,39 @@ def speakers_handler(context, update):
 
 def question_handler(context, update):
     query = update.callback_query
-    user = f'user_tg_{query.message.chat_id}'
+    chat_id = query.message.chat_id
+
+    user = f'user_tg_{chat_id}'
     block_id = json.loads(_database.get(user))['block']
 
     if query.data == 'back':
-
-
         context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             text=f'Рады видеть Вас на митапе',
             reply_markup=get_stage_menu(block_id)
         )
         context.bot.delete_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             message_id=query.message.message_id
         )
 
         return 'SPEAKERS'
-    
-    # user = f"user_tg_{query.message.chat_id}"
+
     _database.set(
         user,
-        json.dumps({'speaker': query.data})
+        json.dumps({
+            'speaker': query.data,
+            'block': block_id
+        })
     )
-    _database.set(
-            user,
-            json.dumps({'block': block_id})
-        )
 
     context.bot.send_message(
-        chat_id=query.message.chat_id,
+        chat_id=chat_id,
         text='Введите Ваш вопрос',
         reply_markup=get_back_menu()
     )
     context.bot.delete_message(
-        chat_id=query.message.chat_id,
+        chat_id=chat_id,
         message_id=query.message.message_id
     )
     return 'SAVE_QUESTION'
@@ -870,25 +871,24 @@ def question_handler(context, update):
 
 def save_question_handler(context, update):
     query = update.callback_query
+    chat_id = update.message.chat_id
 
-    if query.data == 'back':
-        user = f'user_tg_{query.message.chat_id}'
+    if query and query.data == 'back':
+        user = f'user_tg_{chat_id}'
         block_id = json.loads(_database.get(user))['block']
 
         context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             text=f'Спикеры в блоке {Block.objects.get(id=block_id).title}',
             reply_markup=get_block_speakers(block_id)
         )
         context.bot.delete_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             message_id=query.message.message_id
         )
         return 'QUESTION'
 
-    chat_id = update.message.chat.id
-
-    user = f'user_tg_{update.message.chat_id}'
+    user = f'user_tg_{chat_id}'
     speaker_id = json.loads(_database.get(user))['speaker']
 
     speaker = Meetuper.objects.get(chat_id=speaker_id).speaker
@@ -929,23 +929,24 @@ def send_notify_to_speaker(context, speaker_id):
             chat_id=speaker_id,
             text=f'Вам задали вопрос.',
         )
-
     return
 
 
 def questions_handler(context, update):
     query = update.callback_query
+    chat_id = query.message.chat_id
+
     if query.data.isdigit():
         speaker_id = query.data
         context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             text=f'{speaker_id}',
         )
         return 'ASK_QUESTION'
 
     elif query.data == 'back':
         context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             text=f'Можете ознакомиться с программой митапа <b><i>"{MeetupProgram.objects.last().title}"</i></b>.'
                  f' или задать вопрос любому спикеру',
             parse_mode='HTML',
@@ -970,15 +971,16 @@ def get_questions(tg_id):
 
 def question_list_handler(context, update):
     query = update.callback_query
+    chat_id = query.message.chat_id
 
     if query.data == 'back':
         context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             text=f'Рады видеть Вас на митапе',
-            reply_markup=get_main_menu(query.message.chat_id)
+            reply_markup=get_main_menu(chat_id)
         )
         context.bot.delete_message(
-            chat_id=query.message.chat_id,
+            chat_id=chat_id,
             message_id=query.message.message_id
         )
 
